@@ -13,6 +13,10 @@ const CUSTOMER_PROFILE = {
 };
 const formatInterestRate = (rate) =>
   `${Number.parseFloat(String(rate).replace(",", ".")).toFixed(2)}%`;
+const REG_MIN_LOAN_AMOUNTS = {
+  thechap: 100000000,
+  tinchap: 10000000,
+};
 
 let historyStack = ["home"],
   toastTimer;
@@ -54,6 +58,7 @@ function goBack() {
   if (window.closeCloseAccountSheet && window.closeCloseAccountSheet()) return;
   if (window.closeIncFeeAccountSheet && window.closeIncFeeAccountSheet()) return;
   if (window.closeOdInterestAccountSheet && window.closeOdInterestAccountSheet()) return;
+  if (window.closeOdPayDaySheet && window.closeOdPayDaySheet()) return;
   if (window.closeOdTerms && window.closeOdTerms()) return;
   const cs = document.getElementById("contractSheet");
   if (cs && cs.classList.contains("on")) {
@@ -100,6 +105,8 @@ function render(id) {
   $("#phone").classList.toggle(
     "nonav",
     id.startsWith("od-") ||
+      id === "prepay-loan" ||
+      id === "prepay-confirm" ||
       id === "prepay-success" ||
       id === "repay-schedule" ||
       id === "doc-preview" ||
@@ -730,7 +737,15 @@ function openPickSheet(title, opts, cb) {
   PK_LIST.innerHTML = opts
     .map(
       (o, i) =>
-        `<button class="sopt${o.check ? " savings-sopt" : ""}${o.selected ? " is-selected" : ""}" data-opt="${i}"${o.check ? ` aria-pressed="${!!o.selected}"` : ""}>${o.check ? '<span class="sopt-copy">' : ""}<b>${o.l}</b>${o.s ? `<span>${o.s}</span>` : ""}${o.check ? `</span><svg class="sopt-check" aria-hidden="true"><use href="#check" /></svg>` : ""}</button>`,
+        o.balance
+          ? `<button class="close-account-option savings-sopt${o.selected ? " on" : ""}" type="button" data-opt="${i}" aria-pressed="${!!o.selected}">
+              <span class="ac-body">
+                <span class="ac-bal">${o.balance} <span class="ac-unit">VND</span></span>
+                <span class="ac-name"><span>${o.l}</span><span class="ac-divider">|</span><span>${o.s}</span></span>
+              </span>
+              <span class="ac-check"><svg><use href="#check" /></svg></span>
+            </button>`
+          : `<button class="sopt${o.check ? " savings-sopt" : ""}${o.selected ? " is-selected" : ""}" data-opt="${i}"${o.check ? ` aria-pressed="${!!o.selected}"` : ""}>${o.check ? '<span class="sopt-copy">' : ""}<b>${o.l}</b>${o.s ? `<span>${o.s}</span>` : ""}${o.check ? `</span><svg class="sopt-check" aria-hidden="true"><use href="#check" /></svg>` : ""}</button>`,
     )
     .join("");
   pkOpts = opts;
@@ -869,6 +884,9 @@ const UNSECURED_PURPOSES = new Set([
   "Vay thấu chi",
 ]);
 let regType = "thechap";
+function getRegMinLoanAmount() {
+  return REG_MIN_LOAN_AMOUNTS[regType];
+}
 function getPurposeOptions() {
   return regType === "thechap"
     ? PICKS.purpose.o
@@ -1199,7 +1217,7 @@ function getRegData() {
 }
 function isRegDataComplete(data = getRegData()) {
   return Boolean(
-    data.amount > 0 &&
+    data.amount >= getRegMinLoanAmount() &&
     data.purpose &&
     data.term &&
     data.address &&
@@ -1211,12 +1229,22 @@ function isRegDataComplete(data = getRegData()) {
   );
 }
 function updateRegNextState() {
+  const amountInput = document.getElementById("fAmt");
+  const amountError = document.getElementById("fAmtError");
+  const amount = +((amountInput.value || "").replace(/\D/g, "") || 0);
+  const minimumAmount = getRegMinLoanAmount();
+  const belowMinimum = amount > 0 && amount < minimumAmount;
+  amountError.hidden = !belowMinimum;
+  amountError.textContent = `Số tiền vay tối thiểu là ${minimumAmount.toLocaleString("en-US")}đ`;
+  amountInput.setAttribute("aria-invalid", String(belowMinimum));
+  amountInput.closest(".reg-amount-field").classList.toggle("is-error", belowMinimum);
   const button = document.getElementById("fSubmit");
   if (button) button.disabled = !isRegDataComplete();
 }
 function validateRegData(data, requireConsent = false) {
-  if (!(data.amount > 0)) {
-    toast("Vui lòng nhập số tiền đề nghị vay");
+  if (data.amount < getRegMinLoanAmount()) {
+    updateRegNextState();
+    if (data.amount === 0) toast("Vui lòng nhập số tiền đề nghị vay");
     return false;
   }
   if (!data.term) {
@@ -1349,7 +1377,15 @@ function submitReg() {
   document.getElementById("dWords").textContent = "(" + docSo(amt) + ")";
   document.getElementById("dExecutionTime").textContent =
     `${rPad(executedAt.getDate())}/${rPad(executedAt.getMonth() + 1)}/${executedAt.getFullYear()}`;
-  document.getElementById("dPurpose").textContent = purpose;
+  const purposeNames = {
+    "Vay tiêu dùng": "Tiêu dùng",
+    "Vay kinh doanh": "Kinh doanh",
+    "Vay thấu chi": "Thấu chi",
+  };
+  const purposeName = purposeNames[purpose];
+  document.getElementById("dPurpose").textContent = purposeName
+    ? `${purposeName} ${regType === "thechap" ? "thế chấp" : "tín chấp"}`
+    : purpose;
   document.getElementById("dTerm").textContent = term;
   document.getElementById("dCollateralRow").hidden = regType !== "thechap";
   const assetList = document.getElementById("dAssets");
@@ -1371,6 +1407,7 @@ let demandMax = 0; // Số tiền vay tối đa của sổ đang chọn
 const savingsData = {
   s1: {
     amount: "50,000,000",
+    balance: "375,000,000",
     max: 300000000,
     rate: 8.6,
     endDate: "31/12/2027",
@@ -1380,6 +1417,7 @@ const savingsData = {
   },
   s2: {
     amount: "50,000,000",
+    balance: "500,000,000",
     max: 400000000,
     rate: 8.65,
     endDate: "31/12/2028",
@@ -1487,14 +1525,14 @@ function openSavingsPickSheet() {
       v: "s1",
       l: "000001105208",
       s: "Tiết kiệm lĩnh lãi cuối kỳ",
-      check: true,
+      balance: savingsData.s1.balance,
       selected: selectedId === "s1",
     },
     {
       v: "s2",
       l: "000002710195",
       s: "Tiết kiệm lĩnh lãi cuối kỳ",
-      check: true,
+      balance: savingsData.s2.balance,
       selected: selectedId === "s2",
     },
   ];
@@ -1515,12 +1553,17 @@ function syncDemandAmount() {
   document.getElementById("demand-amount-words").textContent =
     n > 0 ? docSo(n) : "";
   const over = demandMax > 0 && n > demandMax;
-  demandErr.hidden = !over;
-  if (over)
-    demandErr.textContent =
-      "Số tiền vay tối đa là " + demandMax.toLocaleString("en-US") + " VND";
-  demandInput.closest(".fld").classList.toggle("is-error", over);
-  demandNext.disabled = over;
+  const belowMinimum = n > 0 && n < 10000000;
+  const invalid = belowMinimum || over;
+  demandErr.hidden = !invalid;
+  demandErr.textContent = belowMinimum
+    ? "Số tiền vay tối thiểu là 10,000,000đ"
+    : over
+      ? "Số tiền vay tối đa là " + demandMax.toLocaleString("en-US") + " VND"
+      : "";
+  demandInput.setAttribute("aria-invalid", String(invalid));
+  demandInput.closest(".fld").classList.toggle("is-error", invalid);
+  demandNext.disabled = n < 10000000 || over;
   // đồng bộ số tiền người dùng nhập sang màn Xác nhận & Hợp đồng
   const txt = demandInput.value || "0";
   document.getElementById("confirm-loan-amount").textContent = txt + " VND";
@@ -1940,9 +1983,9 @@ updateTabBadges();
     rate: 12,
     openFee: 0.0011,
     mgmtFee: 0.0033,
-    interest: 0.002375,
     payDay: 5,
   };
+  let transactionDate = new Date();
   let selectedInterestAccount = PAYMENT_ACCOUNTS[1];
   let limit = 100000000;
   const RELS = [
@@ -1976,6 +2019,71 @@ updateTabBadges();
   });
   let term = 12;
   const amt = () => +dig($i("od-amt").value);
+  const payDaySheet = $i("odPayDaySheet");
+  const payDayCalendar = $i("odPayDayCalendar");
+  const payDayScrim = $i("odPayDayScrim");
+  function renderPayDayCalendar() {
+    const monthStart = new Date(
+      transactionDate.getFullYear(),
+      transactionDate.getMonth(),
+      1,
+    );
+    const daysInMonth = new Date(
+      transactionDate.getFullYear(),
+      transactionDate.getMonth() + 1,
+      0,
+    ).getDate();
+    const startOffset = (monthStart.getDay() + 6) % 7;
+    $i("odPayDayMonth").textContent = transactionDate.toLocaleDateString(
+      "vi-VN",
+      { month: "long", year: "numeric" },
+    );
+    payDayCalendar.innerHTML =
+      ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+        .map((day) => `<span class="od-pay-day-weekday">${day}</span>`)
+        .join("") +
+      Array.from(
+        { length: startOffset },
+        () => '<span aria-hidden="true"></span>',
+      ).join("") +
+      Array.from(
+        { length: daysInMonth },
+        (_, index) => {
+          const day = index + 1;
+          return `<button type="button" class="od-pay-day-option${day === OD.payDay ? " is-selected" : ""}" data-pay-day="${day}" aria-label="Ngày ${day}" aria-pressed="${day === OD.payDay}">${day}</button>`;
+        },
+      ).join("");
+  }
+  function togglePayDaySheet(open) {
+    payDaySheet.classList.toggle("on", open);
+    payDaySheet.setAttribute("aria-hidden", String(!open));
+    payDayScrim.classList.toggle("on", open);
+    $i("od-pay-day").setAttribute("aria-expanded", String(open));
+  }
+  window.closeOdPayDaySheet = () => {
+    const wasOpen = payDaySheet.classList.contains("on");
+    togglePayDaySheet(false);
+    if (wasOpen) $i("od-pay-day").focus();
+    return wasOpen;
+  };
+  $i("od-pay-day").addEventListener("click", () => {
+    renderPayDayCalendar();
+    togglePayDaySheet(true);
+  });
+  $i("odPayDayClose").addEventListener("click", () =>
+    window.closeOdPayDaySheet(),
+  );
+  payDayScrim.addEventListener("click", () => window.closeOdPayDaySheet());
+  payDayCalendar.addEventListener("click", (event) => {
+    const option = event.target.closest("[data-pay-day]");
+    if (!option) return;
+    OD.payDay = Number(option.dataset.payDay);
+    $i("od-pay-day-value").textContent = String(OD.payDay);
+    window.closeOdPayDaySheet();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") window.closeOdPayDaySheet();
+  });
   function renderInterestAccounts() {
     $i("odInterestAccountList").innerHTML = PAYMENT_ACCOUNTS.map(
       (account) => `
@@ -2038,6 +2146,14 @@ updateTabBadges();
   /* --- Thông tin thanh toán tạm tính --- */
   function upd() {
     const a = amt();
+    const overLimit = a > limit;
+    const amountField = $i("od-amt").closest(".od-demand-amount");
+    const amountError = $i("od-amt-error");
+    amountField.classList.toggle("is-error", overLimit);
+    amountError.hidden = !overLimit;
+    amountError.textContent = overLimit
+      ? "Số tiền tối đa là " + f(limit) + " VND"
+      : "";
     $i("od-pay").innerHTML = [
       ["Lãi suất vay", `${formatInterestRate(OD.rate)}/năm`],
       ["Phí mở hạn mức", f(a * OD.openFee) + " <small>VND</small>"],
@@ -2045,20 +2161,19 @@ updateTabBadges();
         "Phí quản lý tài khoản thấu chi",
         f(a * OD.mgmtFee) + " <small>VND</small>",
       ],
-      ["Lãi trả hàng tháng", f(a * OD.interest) + " <small>VND</small>"],
+      [
+        "Lãi trả hàng tháng",
+        f((a * OD.rate * 30) / (365 * 100)) + " <small>VND</small>",
+      ],
     ]
       .map(([l, v]) => `<div class="od-row"><span>${l}</span><b>${v}</b></div>`)
       .join("");
   }
   ["od-amt", "od-eq"].forEach((id) =>
     $i(id).addEventListener("input", (e) => {
-      let d = dig(e.target.value)
+      const d = dig(e.target.value)
         .replace(/^0+(?=\d)/, "")
         .slice(0, 12);
-      if (id === "od-amt" && +d > limit) {
-        d = String(limit);
-        toast("Số tiền vay tối đa là " + f(limit) + " VND");
-      }
       e.target.value = d ? (+d).toLocaleString("en-US") : "";
       upd();
     }),
@@ -2101,6 +2216,10 @@ updateTabBadges();
 
   /* --- Reset dữ liệu mỗi lần vào luồng --- */
   function reset() {
+    transactionDate = new Date();
+    OD.payDay = 5;
+    $i("od-pay-day-value").textContent = String(OD.payDay);
+    togglePayDaySheet(false);
     term = 12;
     $i("od-term-val").textContent = "12 tháng";
     selectedInterestAccount = PAYMENT_ACCOUNTS[1];
@@ -2128,7 +2247,7 @@ updateTabBadges();
   $i("od-next1").onclick = () => {
     const a = amt();
     if (!a) return toast("Vui lòng nhập số tiền");
-    if (a > limit) return toast("Số tiền tối đa là " + f(limit) + " VND");
+    if (a > limit) return;
     if (!$i("od-eq").value) return toast("Vui lòng nhập vốn tự có");
     navigateTo("od-profile");
   };
@@ -2153,7 +2272,7 @@ updateTabBadges();
   /* --- Màn Xác nhận thông tin --- */
   function fillConfirm() {
     const a = amt(),
-      now = new Date(),
+      now = new Date(transactionDate),
       end = new Date(now);
     end.setMonth(end.getMonth() + term);
     const phones = ["od-p1", "od-p2"].map((i) => dig($i(i).value));
@@ -2180,25 +2299,25 @@ updateTabBadges();
         ["Ngày cấp", "18/02/2022"],
         ["Nơi cấp", "Bộ Công an"],
         ["Số điện thoại", CUSTOMER_PROFILE.phone],
-        ["Email", "nguyenvana@gmail.com"],
-        ["Số điện thoại người tham chiếu", phones.join("<br>")],
+        ["Email", "nguyenminhngoc@gmail.com"],
         ["Địa chỉ thường trú", esc(permanentAddress)],
         [
           "Nơi ở hiện tại",
           esc(currentAddress),
         ],
+        ["Số điện thoại người tham chiếu", phones.join("<br>")],
       ]) +
       card("Thông tin khoản vay", [
+        ["Mục đích vay", "Tiêu dùng phục vụ đời sống"],
         ["Hạn mức vay", f(a) + " VND"],
         ["Thời hạn vay", term + " tháng"],
         ["Lãi suất vay", `${formatInterestRate(OD.rate)}/năm`],
-        ["Mục đích vay", "Tiêu dùng phục vụ đời sống"],
         ["Tài khoản trả lãi", selectedInterestAccount.number],
         [
           "Tài khoản trả gốc",
           "Tài khoản thấu chi do SeABank mở cho Khách hàng",
         ],
-        ["Ngày trả lãi hàng tháng", OD.payDay],
+        ["Ngày trả lãi hàng tháng", `Ngày ${OD.payDay} hàng tháng`],
         ["Ngày trả gốc", dm(end)],
       ]) +
       card("Thông tin khác", [
@@ -3114,17 +3233,34 @@ updateTabBadges();
 
 /* ===== Chi tiết khoản vay: hiển thị theo từng bản ghi =====
    Mặc định (không có trong DETAILS) = nội dung gốc trong HTML của khoản vay cầm cố sổ tiết kiệm.
-   Khoản vay tại quầy khai báo dữ liệu riêng bên dưới, khóa theo số hợp đồng; nhãn phải trùng nhãn trong màn Chi tiết. */
+   Các khoản vay có dữ liệu riêng khai báo bên dưới, khóa theo số hợp đồng; nhãn phải trùng nhãn trong màn Chi tiết. */
 (() => {
   const detail = document.getElementById("detail");
   if (!detail) return;
   const rows = [...detail.querySelectorAll(".dcard .row")];
-  const labelOf = (r) =>
-    r.childNodes[0].textContent.replace(/\s+/g, " ").trim();
+  const labelNodeOf = (r) =>
+    r.querySelector("span") ||
+    [...r.childNodes].find(
+      (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+    );
+  const labelOf = (r) => {
+    const label = labelNodeOf(r);
+    const text =
+      (label &&
+        [...label.childNodes]
+          .map((node) => (node.nodeName === "BR" ? " " : node.textContent))
+          .join("")) ||
+      [...r.childNodes].find(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+      )?.textContent ||
+      "";
+    return text.replace(/\s+/g, " ").trim();
+  };
   const valEl = (r) => r.querySelector("b");
   const base = rows.map((r) => ({
     r,
     label: labelOf(r),
+    labelNode: labelNodeOf(r),
     value: valEl(r).textContent,
   }));
 
@@ -3168,7 +3304,7 @@ updateTabBadges();
       "Dư nợ hiện tại": "50,000,000 VND",
       "Lãi suất vay": "20.39%/năm",
       "Tiền lãi tạm tính": "849,583 VND",
-      "Hạn thanh toán kỳ tiếp theo": [
+      "Kỳ thanh toán tiếp theo": [
         "Ngày trả lãi kỳ tiếp theo",
         "25/10/2026",
       ],
@@ -3184,8 +3320,8 @@ updateTabBadges();
     },
   };
 
-  // Tham số lịch trả nợ (niên kim, lãi r/12). paid = số kỳ đã trả; pmt/balance khớp danh sách & chi tiết.
-  // first = [tháng, năm] của kỳ 1; day = ngày trả nợ hằng tháng. Thêm khoản vay trả định kỳ khác = thêm 1 mục ở đây.
+  // Lịch niên kim: paid = số kỳ đã trả; first = [tháng, năm] của kỳ 1.
+  // Khoản vay ngắn hạn dùng payments để chỉ hiển thị các kỳ đã thanh toán.
   const SCHEDULES = {
     LD2531514476: {
       name: "Vay mua bất động sản",
@@ -3208,6 +3344,25 @@ updateTabBadges();
       balance: 411697000,
       day: 23,
       first: [7, 2023],
+    },
+    "000001234567": {
+      name: "Thấu chi lương",
+      paidOnly: true,
+      term: 12,
+      payments: [
+        { date: "25/04/2026", total: 849583 },
+        { date: "25/05/2026", total: 849583 },
+        { date: "25/06/2026", total: 849583 },
+        { date: "25/07/2026", total: 849583 },
+        { date: "25/08/2026", total: 849583 },
+        { date: "25/09/2026", total: 849583 },
+      ],
+    },
+    "000001105208": {
+      name: "Vay cầm cố sổ tiết kiệm",
+      paidOnly: true,
+      term: 12,
+      payments: [],
     },
   };
   window.LOAN_SCHEDULES = SCHEDULES;
@@ -3310,10 +3465,10 @@ updateTabBadges();
     document.getElementById("phone").dataset.loanChannel = channel || "";
     configureDetailActions(key);
     const d = DETAILS[key || contract] || {};
-    base.forEach(({ r, label, value }) => {
+    base.forEach(({ r, label, labelNode, value }) => {
       const o = d[label];
       const [l, v] = Array.isArray(o) ? o : [label, o ?? value];
-      r.childNodes[0].textContent = l;
+      if (l !== label) labelNode.textContent = l;
       valEl(r).textContent = v;
     });
   }
@@ -3402,7 +3557,13 @@ updateTabBadges();
       </div>
     </div>`;
   }
-  function paint() {
+  function paint(paidOnly) {
+    if (paidOnly) {
+      list.innerHTML = rows.length
+        ? rows.map(item).join("")
+        : '<p class="rs-empty">Chưa có kỳ thanh toán nào được ghi nhận.</p>';
+      return;
+    }
     const years = new Map();
     rows.forEach((row) => {
       const year = row.date.slice(-4);
@@ -3432,14 +3593,20 @@ updateTabBadges();
   function open(contract) {
     const cfg = (window.LOAN_SCHEDULES || {})[contract];
     if (!cfg) return;
-    rows = build(cfg);
+    rows = cfg.paidOnly
+      ? cfg.payments.map((payment, index) => ({
+          ...payment,
+          k: index + 1,
+          st: "paid",
+        }))
+      : build(cfg);
     const paidRows = rows.filter((r) => r.st === "paid");
-    el("rsProgTxt").textContent = `${cfg.paid}/${cfg.term}`;
-    el("rsFill").style.width = (cfg.paid / cfg.term) * 100 + "%";
+    el("rsProgTxt").textContent = `${paidRows.length}/${cfg.term}`;
+    el("rsFill").style.width = (paidRows.length / cfg.term) * 100 + "%";
     el("rsPaid").textContent = f(
       paidRows.reduce((s, r) => s + r.total, 0),
     );
-    paint();
+    paint(cfg.paidOnly);
   }
   list.addEventListener("click", (event) => {
     const button = event.target.closest(".rs-year-toggle");
@@ -3860,7 +4027,6 @@ updateTabBadges();
     // Đang đi luồng Vay cầm cố sổ tiết kiệm (đã qua màn Xác nhận đăng ký vay)
     if (historyStack.includes("confirm-loan")) {
       const amount = $i("demand-amount").value.replace(/\D/g, "");
-      $i("fs-title").textContent = "Thông tin vay cầm cố sổ tiết kiệm";
       $i("fs-limit-lb").textContent = "Số tiền vay";
       $i("fs-term-lb").textContent = "Thời hạn vay";
       $i("fs-rate-lb").textContent = "Lãi suất vay";
@@ -3882,11 +4048,10 @@ updateTabBadges();
     const odAmt = ($i("od-amt").value || "").replace(/\D/g, "");
     $i("fs-rate-lb").textContent = "Lãi suất vay";
     $i("fs-collateral-row").hidden = true;
-    $i("fs-title").textContent = "Thông tin thấu chi";
     $i("fs-limit-lb").textContent = "Hạn mức thấu chi";
     $i("fs-term-lb").textContent = "Thời hạn";
     $i("fs-rate").textContent = "12.00%/năm";
-    $i("fs-limit").textContent = odAmt ? fmt(odAmt) + " VND" : "10.000.000 VND";
+    $i("fs-limit").textContent = `${fmt(odAmt || 10000000)} VND`;
     $i("fs-term").textContent = $i("od-term-val").textContent.replace(
       /tháng/i,
       "Tháng",

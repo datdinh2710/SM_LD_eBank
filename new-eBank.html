@@ -754,7 +754,7 @@
         <div class="pre" id="preApproved">
           <!-- Card tổng hạn mức -->
           <div class="total-card">
-            <span class="tt-label">Tổng hạn mức<br />được duyệt</span>
+            <span class="tt-label">Tổng hạn mức<br />vay được duyệt</span>
             <b class="tt-amount" id="totalAmount">700,000,000 <u>VND</u></b>
           </div>
 
@@ -1027,7 +1027,7 @@
         <!-- Promo (hiển thị tùy trường hợp) -->
         <div class="promo" id="profilePromo">
           <div>
-            Bạn vừa được cấp
+            Tổng hạn mức vay được duyệt
             <span class="promo-amount" id="promoAmount"></span>
           </div>
           <button data-go="loan">Vay ngay</button>
@@ -1078,16 +1078,42 @@
                 <div>
                   <b>Vay thấu chi có TSBĐ</b
                   ><span class="chip c-blue">Tiếp nhận yêu cầu</span
-                  ><small>Ngày yêu cầu: 01/10/2026</small>
+                  ><small class="record-id">Mã hồ sơ: SB-0000826134-RLOSONL</small>
                 </div>
                 <svg class="chev">
                   <use href="#down" />
                 </svg>
               </button>
               <div class="acc-b">
-                <div class="row">Mã hồ sơ<b>SB-0000826134-RLOSONL</b></div>
+                <div class="row">Ngày yêu cầu<b>01/10/2026</b></div>
                 <div class="row">Số tiền đề nghị<b>100,000,000 VND</b></div>
                 <div class="row">Trạng thái<b>Chờ tiếp nhận</b></div>
+              </div>
+            </div>
+            <div class="acc" data-channel="online">
+              <button class="acc-h">
+                <div>
+                  <b>Thấu chi CASA</b
+                  ><span class="chip c-red">Không thành công</span
+                  ><small class="record-id">Mã hồ sơ: SB-567089545-RLOSONL</small>
+                </div>
+                <svg class="chev">
+                  <use href="#down" />
+                </svg>
+              </button>
+              <div class="acc-b">
+                <div class="row">Ngày yêu cầu<b>31/10/2026</b></div>
+                <div class="row">
+                  Số tiền đề nghị<b>80,000,000 VND</b>
+                </div>
+                <div class="row">Loại yêu cầu<b>Cấp mới</b></div>
+                <div class="rejection-note" role="note">
+                  <img src="reject_note.png" alt="reject_icon" />
+                  <div>
+                    <b>Lý do từ chối duyệt vay</b>
+                    <span>Không có kết quả CIC</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="acc" data-channel="counter">
@@ -1095,14 +1121,14 @@
                 <div>
                   <b>Vay tiêu dùng có tài sản bảo đảm</b
                   ><span class="chip c-org">Đang xử lý</span
-                  ><small>Ngày yêu cầu: 02/10/2026</small>
+                  ><small class="record-id">Mã hồ sơ: SB-0000000870831-RLOS</small>
                 </div>
                 <svg class="chev">
                   <use href="#down" />
                 </svg>
               </button>
               <div class="acc-b">
-                <div class="row">Mã hồ sơ<b>SB-0000000870831-RLOS</b></div>
+                <div class="row">Ngày yêu cầu<b>02/10/2026</b></div>
                 <div class="row">Số tiền đề nghị<b>800,000,000 VND</b></div>
                 <div class="row">Trạng thái<b>Đang thẩm định</b></div>
               </div>
@@ -1112,14 +1138,14 @@
                 <div>
                   <b>Vay mua bất động sản</b
                   ><span class="chip c-red">Không thành công</span
-                  ><small>Ngày yêu cầu: 28/09/2026</small>
+                  ><small class="record-id">Mã hồ sơ: SB-0000000878835-RLOS</small>
                 </div>
                 <svg class="chev">
                   <use href="#down" />
                 </svg>
               </button>
               <div class="acc-b">
-                <div class="row">Mã hồ sơ<b>SB-0000000878835-RLOS</b></div>
+                <div class="row">Ngày yêu cầu<b>28/09/2026</b></div>
                 <div class="row">Số tiền đề nghị<b>1,500,000,000 VND</b></div>
                 <div class="row">Lý do<b>Chưa đủ điều kiện</b></div>
               </div>
@@ -1427,21 +1453,23 @@
               style="margin-top: 12px; font-size: 12px; color: var(--mut)"
             ></div>
           </div>
-          <h4>Bảng lịch trả nợ chi tiết</h4>
+          <h4 class="calc-schedule-title">
+            <span>Bảng lịch trả nợ chi tiết</span>
+            <em>Đơn vị tính: VND</em>
+          </h4>
           <div class="tw">
             <div class="tg">
               <div class="th">
-                <span>Kỳ trả nợ</span><span>Dư nợ gốc (VND)</span
-                ><span>Gốc phải trả (VND)</span><span>Lãi phải trả (VND)</span
-                ><span>Tổng trả hàng tháng (VND)</span>
+                <span>Kỳ trả nợ</span><span>Dư nợ gốc</span
+                ><span>Gốc phải trả</span><span>Lãi phải trả</span
+                ><span>Tổng trả hàng tháng</span>
               </div>
               <div id="tb"></div>
             </div>
           </div>
           <div class="note">
-            <svg>
-              <use href="#infoI" /></svg
-            ><span
+            <img src="note.png" alt="note" >
+            <span
               >Kỳ 0 là kỳ trả nợ cơ sở, tương ứng thời điểm khách hàng mới giải
               ngân khoản vay, chưa phát sinh nghĩa vụ trả nợ.</span
             >
@@ -1507,36 +1535,36 @@
           <div class="row">Tài khoản thu nợ<b>666414666</b></div>
           <div class="row">Chi nhánh quản lý<b>CN Cầu Giấy</b></div>
         </div>
+        <div class="detail-footer" id="detailFooter" hidden>
+          <button
+            class="sched-link"
+            id="schedLink"
+            data-go="repay-schedule"
+            hidden
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect
+                x="3"
+                y="5"
+                width="18"
+                height="16"
+                rx="2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M7 3v4M17 3v4M3 10h18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+            Lịch thanh toán
+          </button>
+        </div>
       </section>
-      <div class="detail-footer" id="detailFooter" hidden>
-        <button
-          class="sched-link"
-          id="schedLink"
-          data-go="repay-schedule"
-          hidden
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect
-              x="3"
-              y="5"
-              width="18"
-              height="16"
-              rx="2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            />
-            <path
-              d="M7 3v4M17 3v4M3 10h18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
-          Lịch thanh toán
-        </button>
-      </div>
       <!-- Lịch trả nợ (từ Chi tiết khoản vay tại quầy) -->
       <section class="screen full" id="repay-schedule">
         <div class="rs-backdrop" aria-label="Đóng lịch thanh toán"></div>
@@ -1579,7 +1607,7 @@
         </div>
         <h3 class="sec" style="margin-top: 6px">Thông tin khoản vay</h3>
         <div class="fld fld--title savings-select-field" id="savings-select-field">
-          <span class="lb">Sổ tiết kiệm làm tài sản bảo đảm</span>
+          <span class="lb">Tài sản bảo đảm</span>
           <button
             class="savings-select-trigger"
             id="demand-savings-trigger"
@@ -1610,6 +1638,7 @@
               inputmode="numeric"
               autocomplete="off"
               aria-label="Số tiền đề nghị vay"
+              aria-describedby="demand-amount-words demand-amount-err"
             />
             <em>VND</em>
           </span>
@@ -1621,8 +1650,7 @@
           style="height: auto; min-height: 68px; padding: 12px 16px"
         >
           <span class="lb"
-            >Mục đích vay vốn*
-            <span class="req" style="color: #d7191f">*</span>
+            >Mục đích vay vốn
           </span>
           <span class="vl purpose-copy" id="demand-purpose"
             >Bù đắp phần vốn tự có, các chi phí đã ứng trước sử dụng để thực hiện phương án phục vụ nhu cầu đời sống</span
@@ -1664,15 +1692,17 @@
             <use href="#down" />
           </svg>
         </button>
+      </section>
+      <div class="screen-bottom-actions loan-demand-footer">
         <button
           class="submit"
           id="btn-demand-next"
-          style="margin-top: 24px"
           data-go="confirm-loan"
+          disabled
         >
           Tiếp tục
         </button>
-      </section>
+      </div>
       <section class="screen full" id="confirm-loan">
         <div class="bar">
           <button class="back" data-back aria-label="Quay lại">
@@ -1681,7 +1711,6 @@
           <div class="bt">Xác nhận đăng ký vay</div>
           <span style="width: 40px"></span>
         </div>
-        <h3 class="sec">Xác nhận thông tin vay vốn</h3>
         <p class="sub" style="max-width: 100%; margin-bottom: 16px">
           Quý khách vui lòng kiểm tra thông tin đề nghị vay vốn dưới đây.
           SeABank sẽ được sử dụng các thông tin này để thẩm định và phê duyệt
@@ -1859,11 +1888,10 @@
           <h2>Đăng ký thành công</h2>
           <p>SeABank đã tiếp nhận thông tin<br />đăng ký của Quý khách.</p>
           <div class="final-summary">
-            <h3 id="fs-title">Thông tin thấu chi</h3>
             <div class="fs-row"><span>Trạng thái</span><b>Đang xử lý</b></div>
             <div class="fs-row">
               <span id="fs-limit-lb">Hạn mức thấu chi</span
-              ><b id="fs-limit">10.000.000 VND</b>
+              ><b id="fs-limit">10,000,000 VND</b>
             </div>
             <div class="fs-row">
               <span id="fs-term-lb">Thời hạn</span><b id="fs-term">12 Tháng</b>
@@ -1933,6 +1961,7 @@
                 placeholder="0"
                 autocomplete="off"
                 aria-label="Số tiền đề nghị vay"
+                aria-describedby="fAmtWords fAmtError"
               />
               <em>VND</em>
             </span>
@@ -1942,6 +1971,9 @@
               aria-live="polite"
             ></span>
           </label>
+          <div class="reg-amount-error" id="fAmtError" role="alert" hidden>
+            Số tiền vay tối thiểu là 10,000,000đ
+          </div>
           <button class="fld pick" data-pick="term" data-ph="Thời hạn vay">
             <span class="lb" hidden></span><span class="vl ph">Thời hạn vay</span
             ><svg class="pv">
@@ -2181,7 +2213,7 @@
       </section>
       <!-- ========== LUỒNG TRẢ NỢ TRƯỚC HẠN (TẤT TOÁN) ========== -->
       <!-- 1. Màn hình Tất toán trước hạn -->
-      <section class="screen full" id="prepay-loan">
+      <section class="screen full od prepay-screen" id="prepay-loan">
         <div class="bar">
           <button class="back" data-back aria-label="Quay lại">
             <img src="back_btn.png" alt="" />
@@ -2191,83 +2223,92 @@
             <img src="home_btn.png" alt="" />
           </button>
         </div>
-
-        <div class="dcard" style="margin-top: 14px">
-          <h3>Thông tin khoản vay</h3>
-          <div class="row">
-            Số hợp đồng vay<b id="pp-contract">000001105208</b>
+        <div class="od-body prepay-panel">
+          <div class="dcard" style="margin-top: 14px">
+            <h3>Thông tin khoản vay</h3>
+            <div class="row">
+              Số hợp đồng vay<b id="pp-contract">000001105208</b>
+            </div>
+            <div class="row">
+              Dư nợ hiện tại<b id="pp-debt">100,000,000 VND</b>
+            </div>
+            <div class="row">Lãi suất vay<b>9.00%/năm</b></div>
+            <div class="row">Tiền lãi<b id="pp-interest">7,200,000 VND</b></div>
+            <div class="row">Ngày vay<b>5/10/2023</b></div>
+            <div class="row">Ngày đến hạn<b>18/05/2024</b></div>
+            <div class="row">Chi nhánh quản lý<b>CN Ha Noi</b></div>
           </div>
-          <div class="row">
-            Dư nợ hiện tại<b id="pp-debt">100,000,000 VND</b>
-          </div>
-          <div class="row">Lãi suất vay<b>9.00%/năm</b></div>
-          <div class="row">Tiền lãi<b id="pp-interest">7,200,000 VND</b></div>
-          <div class="row">Ngày vay<b>5/10/2023</b></div>
-          <div class="row">Ngày đến hạn<b>18/05/2024</b></div>
-          <div class="row">Đơn vị cho vay<b>CN Ha Noi</b></div>
-        </div>
 
-        <h3 class="sec" id="prepay-sec">Thông tin tất toán</h3>
+          <h3 class="sec" id="prepay-sec">Thông tin tất toán</h3>
 
-        <button class="fld pick" id="prepay-mode-picker" type="button">
-          <span class="lb">Hình thức</span>
-          <span class="vl" id="prepay-mode-value">Chọn hình thức</span>
-          <svg class="pv">
-            <use href="#down" />
-          </svg>
-        </button>
+          <button class="fld pick" id="prepay-mode-picker" type="button">
+            <span class="lb">Hình thức</span>
+            <span class="vl" id="prepay-mode-value">Chọn hình thức</span>
+            <svg class="pv">
+              <use href="#down" />
+            </svg>
+          </button>
 
-        <label class="fld reg-amount-field" id="prepay-amount-field">
-          <span class="reg-amount-label">Số tiền trả nợ</span>
-          <span class="reg-amount-entry">
-            <input
-              id="prepay-amount"
-              inputmode="numeric"
-              autocomplete="off"
-              placeholder="0"
-              aria-label="Số tiền trả nợ"
-            />
-            <em>VND</em>
-          </span>
-          <span
-            class="reg-amount-words"
-            id="prepay-amount-words"
-            aria-live="polite"
-          ></span>
-        </label>
-        <div class="pp-err" id="prepay-amount-err" role="alert" hidden></div>
+          <label class="fld reg-amount-field" id="prepay-amount-field">
+            <span class="reg-amount-label">Số tiền trả nợ</span>
+            <span class="reg-amount-entry">
+              <input
+                id="prepay-amount"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="0"
+                aria-label="Số tiền trả nợ"
+              />
+              <em>VND</em>
+            </span>
+            <span
+              class="reg-amount-words"
+              id="prepay-amount-words"
+              aria-live="polite"
+            ></span>
+          </label>
+          <div class="pp-err" id="prepay-amount-err" role="alert" hidden></div>
 
-        <button class="fld pick" id="prepay-source-picker" type="button" hidden>
-          <span class="lb">Nguồn tiền trả nợ</span>
-          <span class="vl ph" id="prepay-source-value">Chọn nguồn tiền</span>
-          <svg class="pv">
-            <use href="#down" />
-          </svg>
-        </button>
-
-        <button
-          class="fld pick"
-          id="prepay-account-picker"
-          type="button"
-          hidden
-        >
-          <span class="lb">Tài khoản trả nợ</span>
-          <span class="vl ph" id="prepay-account-value"
-            >Chọn tài khoản trả nợ</span
+          <button
+            class="fld pick"
+            id="prepay-source-picker"
+            type="button"
+            hidden
           >
-          <svg class="pv">
-            <use href="#down" />
-          </svg>
-        </button>
+            <span class="lb">Nguồn tiền trả nợ</span>
+            <span class="vl ph" id="prepay-source-value">Chọn nguồn tiền</span>
+            <svg class="pv">
+              <use href="#down" />
+            </svg>
+          </button>
 
-        <div class="fld ro stk prepay-savings" id="prepay-savings-field" hidden>
-          <span>Sổ tiết kiệm</span>
-          <span id="prepay-savings-value" aria-readonly="true"></span>
+          <button
+            class="fld pick"
+            id="prepay-account-picker"
+            type="button"
+            hidden
+          >
+            <span class="lb">Tài khoản trả nợ</span>
+            <span class="vl ph" id="prepay-account-value"
+              >Chọn tài khoản trả nợ</span
+            >
+            <svg class="pv">
+              <use href="#down" />
+            </svg>
+          </button>
+
+          <div
+            class="fld ro stk prepay-savings"
+            id="prepay-savings-field"
+            hidden
+          >
+            <span>Sổ tiết kiệm</span>
+            <span id="prepay-savings-value" aria-readonly="true"></span>
+          </div>
         </div>
-
-        <button class="submit" id="prepay-next" style="margin-top: 24px">
-          Tiếp tục
-        </button>
+        <div class="od-foot inc-foot prepay-foot">
+          <button class="submit" id="prepay-next">Tiếp tục</button>
+        </div>
       </section>
 
       <!-- 2. Màn hình Xác nhận thông tin -->
@@ -2605,6 +2646,7 @@
                 inputmode="numeric"
                 autocomplete="off"
                 aria-label="Số tiền"
+                aria-describedby="od-amt-words od-amt-error"
               />
               <span>VND</span>
             </span>
@@ -2612,6 +2654,7 @@
               >Một trăm triệu đồng</span
             >
           </label>
+          <div class="od-demand-error" id="od-amt-error" role="alert" hidden></div>
           <div class="od-stack od-demand-stack">
             <div class="od-g2">
               <button class="od-fld p od-demand-field" id="od-term-btn">
@@ -2647,18 +2690,20 @@
               aria-expanded="false"
               aria-label="Tài khoản thu lãi phí"
             >
-              <span class="lb">Tài khoản thu lãi phí</span
+              <span class="lb">Tài khoản thu lãi, phí</span
               ><span class="vl" id="od-interest-account-value">66668888</span>
               <svg class="pv" aria-hidden="true"><use href="#down" /></svg>
             </button>
             <button
               class="od-fld p od-demand-field"
               id="od-pay-day"
-              data-pick="odPayDay"
-              data-val="5"
+              type="button"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-controls="odPayDaySheet"
             >
               <span class="lb">Ngày trả lãi hàng tháng</span
-              ><span class="vl">5</span>
+              ><span class="vl" id="od-pay-day-value">5</span>
               <svg class="pv" aria-hidden="true"><use href="#down" /></svg>
             </button>
           </div>
@@ -2680,6 +2725,31 @@
         </div>
       </section>
 
+      <div class="close-account-scrim" id="odPayDayScrim"></div>
+      <div
+        class="close-account-sheet od-pay-day-sheet"
+        id="odPayDaySheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="odPayDayTitle"
+        aria-hidden="true"
+      >
+        <div class="sh">
+          <b id="odPayDayTitle">Chọn ngày trả lãi</b>
+          <button id="odPayDayClose" type="button" aria-label="Đóng">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+        <p class="od-pay-day-hint" id="odPayDayMonth"></p>
+        <div class="od-pay-day-calendar" id="odPayDayCalendar"></div>
+      </div>
       <div class="close-account-scrim" id="odInterestAccountScrim"></div>
       <div
         class="close-account-sheet"
@@ -2689,7 +2759,7 @@
         aria-labelledby="odInterestAccountTitle"
       >
         <div class="sh">
-          <b id="odInterestAccountTitle">Chọn tài khoản thu lãi phí</b>
+          <b id="odInterestAccountTitle">Tài khoản thu lãi, phí</b>
           <button id="odInterestAccountClose" type="button" aria-label="Đóng">
             <svg
               viewBox="0 0 24 24"
