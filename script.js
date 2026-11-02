@@ -322,7 +322,8 @@ document.addEventListener("click", (e) => {
     if (id === "profile") setTab(caseOverridesTab || "1");
   } else if ("back" in el.dataset) goBack();
   else if (el.dataset.tab) setTab(el.dataset.tab);
-  else if (el.dataset.choose) startReg(el.dataset.choose);
+  else if (el.dataset.choose)
+    startReg(el.dataset.choose, el.dataset.loanType);
   else if (el.dataset.pick) openFieldPick(el.dataset.pick);
   else if (el.dataset.regNext) continueReg();
   else if (el.dataset.submit) submitReg();
@@ -880,7 +881,7 @@ const PURPOSE_MAP = {
   "Vay mua ô tô": "Vay mua ô tô",
   "Vay thấu chi": "Vay thấu chi",
 };
-// Sản phẩm có tài sản bảo đảm sẽ chọn sẵn hình thức Thế chấp.
+// Sản phẩm có tài sản bảo đảm mở form Thế chấp; các sản phẩm còn lại mở form Tín chấp.
 const SECURED_PRODS = ["Vay mua nhà", "Vay mua ô tô"];
 const UNSECURED_PURPOSES = new Set([
   "Vay tiêu dùng",
@@ -1101,22 +1102,25 @@ function renderAssetChips(values) {
   });
   updateRegNextState();
 }
-function startReg(prod) {
+function startReg(prod, loanType) {
   resetRegForm();
-  setPickVal("purpose", PURPOSE_MAP[prod] || prod);
-  if (SECURED_PRODS.includes(prod)) {
-    const rt = document.querySelector('input[name="regType"][value="thechap"]');
-    if (rt) rt.checked = true;
-    applyRegType("thechap");
+  const type = loanType || (SECURED_PRODS.includes(prod) ? "thechap" : "tinchap");
+  const typeRadio = document.querySelector(
+    `input[name="regType"][value="${type}"]`,
+  );
+  if (!typeRadio) {
+    console.error(`Không tìm thấy hình thức vay "${type}" cho sản phẩm "${prod}"`);
+    return;
   }
+  typeRadio.checked = true;
+  applyRegType(type);
+  setPickVal("purpose", PURPOSE_MAP[prod] || prod);
   navigateTo("regform");
 }
 function resetRegForm() {
   const rt = document.querySelector('input[name="regType"][value="thechap"]');
   if (rt) rt.checked = true;
   applyRegType("thechap");
-  const rg = document.getElementById("regTypeGrp");
-  if (rg) rg.hidden = false;
   const a = document.getElementById("fAmt");
   if (a) a.value = "";
   updateRegAmountWords();
@@ -3169,14 +3173,49 @@ updateTabBadges();
   }
   if (donutEl && legendEl) {
     let accumulated = 0;
-    const segments = [];
+    const svgNS = "http://www.w3.org/2000/svg";
+    const chart = document.createElementNS(svgNS, "svg");
+    const center = 71;
+    const radius = 62;
+    const strokeWidth = 7;
+    const gap = 2;
+    const circumference = 2 * Math.PI * radius;
+    chart.setAttribute("class", "debt-donut-chart");
+    chart.setAttribute("viewBox", "0 0 142 142");
+    chart.setAttribute("aria-hidden", "true");
+    chart.replaceChildren();
+
+    const track = document.createElementNS(svgNS, "circle");
+    track.setAttribute("class", "debt-donut-track");
+    track.setAttribute("cx", String(center));
+    track.setAttribute("cy", String(center));
+    track.setAttribute("r", String(radius));
+    chart.append(track);
     legendEl.replaceChildren();
     balances.forEach(({ loan, amount }, index) => {
       if (!amount) return;
       const start = accumulated;
-      accumulated += (amount / totalDebt) * 100;
+      const segmentPercent = (amount / totalDebt) * 100;
+      accumulated += segmentPercent;
       const color = chartColors[index % chartColors.length];
-      segments.push(`${color} ${start}% ${accumulated}%`);
+      const arcLength = (segmentPercent / 100) * circumference;
+      const visibleLength = Math.max(0.1, arcLength - gap - strokeWidth);
+      const segment = document.createElementNS(svgNS, "circle");
+      segment.setAttribute("class", "debt-donut-segment");
+      segment.setAttribute("cx", String(center));
+      segment.setAttribute("cy", String(center));
+      segment.setAttribute("r", String(radius));
+      segment.setAttribute("stroke", color);
+      segment.setAttribute("stroke-width", String(strokeWidth));
+      segment.setAttribute(
+        "stroke-dasharray",
+        `${visibleLength} ${circumference - visibleLength}`,
+      );
+      segment.setAttribute(
+        "stroke-dashoffset",
+        String(-((start / 100) * circumference + (gap + strokeWidth) / 2)),
+      );
+      chart.append(segment);
 
       const item = document.createElement("div");
       item.className = "debt-legend-item";
@@ -3195,9 +3234,8 @@ updateTabBadges();
       item.append(swatch, copy);
       legendEl.append(item);
     });
-    donutEl.style.background = segments.length
-      ? `conic-gradient(${segments.join(", ")})`
-      : "conic-gradient(#e4e6eb 0 100%)";
+    donutEl.querySelector(".debt-donut-chart")?.remove();
+    donutEl.prepend(chart);
     donutEl.setAttribute(
       "aria-label",
       `Tổng dư nợ vay ${totalDebt.toLocaleString("en-US")} VND`,

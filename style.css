@@ -612,21 +612,30 @@ h1 {
   color: var(--ink);
 }
 .debt {
+  display: grid;
+  grid-template-columns: 142px minmax(0, 1fr);
+  grid-template-rows: auto 142px;
+  column-gap: 12px;
+  row-gap: 6px;
   padding: 16px;
   margin-bottom: 14px;
 }
 .debt-heading {
-  margin: 0 0 14px;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  margin: 0;
   color: var(--ink);
   font-size: 15px;
   font-weight: 700;
 }
 .debt-overview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: contents;
 }
 .debt-donut {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
   position: relative;
   display: grid;
   place-items: center;
@@ -634,15 +643,41 @@ h1 {
   width: 142px;
   height: 142px;
   border-radius: 50%;
-  background: conic-gradient(#e4e6eb 0 100%);
+  background: #edf0f4;
+  box-shadow:
+    6px 6px 14px rgba(174, 181, 193, 0.3),
+    -6px -6px 14px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+.debt-donut-chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+  transform-origin: center;
 }
 .debt-donut::before {
   position: absolute;
   width: 74%;
   height: 74%;
   border-radius: 50%;
-  background: #fff;
+  background: #edf0f4;
+  box-shadow:
+    inset 4px 4px 8px rgba(174, 181, 193, 0.28),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.95);
   content: "";
+}
+.debt-donut-track {
+  fill: none;
+  stroke: #e2e6ec;
+  stroke-width: 7;
+}
+.debt-donut-segment {
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 1px rgba(35, 42, 59, 0.18));
 }
 .debt-donut-center {
   position: relative;
@@ -676,41 +711,47 @@ h1 {
   font-weight: 500;
 }
 .debt-legend {
+  grid-column: 2;
+  grid-row: 1 / span 2;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 4px;
   min-width: 0;
+  padding-left: 2px;
 }
 .debt-legend-item {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr);
-  align-items: start;
-  column-gap: 7px;
+  grid-template-columns: 5px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 8px;
   min-width: 0;
 }
 .debt-legend-swatch {
-  width: 8px;
-  height: 8px;
-  margin-top: 3px;
-  border-radius: 50%;
+  width: 5px;
+  height: 18px;
+  border-radius: 999px;
 }
 .debt-legend-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  gap: 1px;
   min-width: 0;
 }
 .debt-legend-name {
   color: #4b5263;
   font-size: 10px;
   line-height: 1.25;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .debt-legend-percent {
   color: var(--ink);
   font-size: 11px;
   font-weight: 700;
+  line-height: 1.2;
 }
 .loan {
   background: #fff;
@@ -809,8 +850,8 @@ h1 {
   border: 1.5px solid #cfd3da;
 }
 .btns .pri {
-  border-color: #ffe3e3;
-  background: #ffe3e3;
+  border-color: var(--red);
+  background: #fff;
   color: #e04848;
 }
 .tabbar {
