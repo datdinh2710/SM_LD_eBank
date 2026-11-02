@@ -1086,6 +1086,34 @@ h1 {
   font-size: 15px;
   color: var(--ink);
 }
+.doc-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px 14px;
+  padding: 0 16px 2px;
+  scrollbar-width: none;
+}
+.doc-filters::-webkit-scrollbar {
+  display: none;
+}
+.doc-filter {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #e1e3e8;
+  border-radius: 20px;
+  background: #fff;
+  color: #4b5263;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.doc-filter.on {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
 .doc {
   display: flex;
   align-items: center;
@@ -3119,6 +3147,18 @@ h1 {
 .demand-form .fld.fld--muted {
   background: #eef1f6 !important;
   border-color: #eef1f6 !important;
+}
+.demand-form.borrow-more .is-readonly {
+  background: #eef1f6;
+  border-color: #eef1f6;
+}
+.demand-form.borrow-more .is-readonly:disabled {
+  color: inherit;
+  opacity: 1;
+  cursor: default;
+}
+.demand-form.borrow-more input[readonly] {
+  cursor: default;
 }
 
 /* --- Contract Bottom Sheet - fixed layout, overlay over confirm-loan --- */

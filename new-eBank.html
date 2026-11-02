@@ -1253,7 +1253,12 @@
                 Tại quầy<i>0</i>
               </button>
             </div>
-            <div class="loan" data-detail="savings-pledge" data-overview-name="Vay cầm cố sổ tiết kiệm">
+            <div
+              class="loan"
+              data-detail="savings-pledge"
+              data-overview-name="Vay cầm cố sổ tiết kiệm"
+              data-savings-id="s1"
+            >
               <div class="t">
                 Vay cầm cố sổ tiết kiệm<button
                   data-go="detail"
@@ -1279,7 +1284,8 @@
                 </button>
                 <button
                   class="pri"
-                  data-soon="Tính năng Vay thêm chưa có trong mock-up">
+                  data-go="loan-demand"
+                  data-borrow-more>
                   Vay thêm
                 </button>
               </div>
@@ -1414,6 +1420,40 @@
             <svg>
               <use href="#filter" />
             </svg>
+          </button>
+        </div>
+        <div class="doc-filters" role="group" aria-label="Lọc nhanh văn bản">
+          <button
+            class="doc-filter on"
+            type="button"
+            data-doc-filter="all"
+            aria-pressed="true"
+          >
+            Tất cả
+          </button>
+          <button
+            class="doc-filter"
+            type="button"
+            data-doc-filter="fee"
+            aria-pressed="false"
+          >
+            Biểu phí
+          </button>
+          <button
+            class="doc-filter"
+            type="button"
+            data-doc-filter="rate"
+            aria-pressed="false"
+          >
+            Biểu lãi suất
+          </button>
+          <button
+            class="doc-filter"
+            type="button"
+            data-doc-filter="terms"
+            aria-pressed="false"
+          >
+            Điều kiện điều khoản
           </button>
         </div>
         <div id="docs"></div>
@@ -1695,7 +1735,7 @@
           </select>
         </div>
         <div class="fld fld--group loan-facts">
-          <div class="gr"><span>Số tiền vay tối đa</span><b id="demand-max">300,000,000 VND</b></div>
+          <div class="gr"><span id="demand-max-label">Số tiền vay tối đa</span><b id="demand-max">300,000,000 VND</b></div>
           <div class="gr"><span>Ngày kết thúc khoản vay</span><b id="demand-end-date">31/12/2027</b></div>
           <div class="gr"><span>Lãi suất vay</span><b id="demand-rate">8.60%/năm</b></div>
         </div>
@@ -1733,7 +1773,7 @@
             <use href="#down" />
           </svg>
         </button>
-        <label class="fld fld--title">
+        <label class="fld fld--title" id="demand-equity-field">
           <span class="lb"
             >Vốn tự có
             <span class="req" style="color: #d7191f">*</span>
@@ -1778,7 +1818,7 @@
           <button class="back" data-back aria-label="Quay lại">
             <img src="back_btn.png" alt="" />
           </button>
-          <div class="bt">Xác nhận đăng ký vay</div>
+          <div class="bt" id="confirm-loan-title">Xác nhận đăng ký vay</div>
           <span style="width: 40px"></span>
         </div>
         <p class="sub" style="max-width: 100%; margin-bottom: 16px">
@@ -1806,7 +1846,7 @@
         <div class="dcard">
           <h3>Thông tin khoản vay</h3>
           <div class="confirm-row">
-            <span>Số tiền vay</span
+            <span id="confirm-loan-amount-label">Số tiền vay</span
             ><b id="confirm-loan-amount">80,000,000 VND</b>
           </div>
           <div class="confirm-row">
@@ -1839,7 +1879,7 @@
             ><b>Mua tài sản, tiêu dùng cá nhân khác</b>
           </div>
           <div class="confirm-row">
-            <span>Tổng giá trị phương án sử dụng vốn</span><b>80,000,000 VND</b>
+            <span>Tổng giá trị phương án sử dụng vốn</span><b id="confirm-loan-total">80,000,000 VND</b>
           </div>
         </div>
         <div class="dcard">

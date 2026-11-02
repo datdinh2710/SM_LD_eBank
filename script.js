@@ -311,6 +311,17 @@ document.addEventListener("click", (e) => {
   if (!el) return;
   if (el.dataset.go) {
     const id = el.dataset.go;
+    if (id === "loan-demand") {
+      if (el.hasAttribute("data-borrow-more")) {
+        if (!startBorrowMoreDemand()) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      } else {
+        setBorrowMoreMode(false);
+      }
+    }
     if (el.dataset.select) handleSavingsSelect(el.dataset.select);
     if (id === "contract") {
       e.preventDefault();
@@ -467,6 +478,7 @@ document.addEventListener("keydown", (e) => {
 
   const boxes = $$("#sheet input"),
     all = boxes[0];
+  const chips = $$(".doc-filter");
 
   function drawDocs() {
     const rawQ = $("#q").value || "";
@@ -491,6 +503,13 @@ document.addEventListener("keydown", (e) => {
       : '<p class="empty">Không tìm thấy văn bản phù hợp</p>';
 
     $("#openFilter").style.color = applied.has("all") ? "" : "var(--red)";
+    chips.forEach((chip) => {
+      const selected =
+        (chip.dataset.docFilter === "all" && applied.has("all")) ||
+        (applied.size === 1 && applied.has(chip.dataset.docFilter));
+      chip.classList.toggle("on", selected);
+      chip.setAttribute("aria-pressed", String(selected));
+    });
   }
   const sheet = (on) => {
     $("#scrim").classList.toggle("on", on);
@@ -519,6 +538,12 @@ document.addEventListener("keydown", (e) => {
     drawDocs();
     sheet(false);
   };
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      applied = new Set([chip.dataset.docFilter]);
+      drawDocs();
+    });
+  });
   $("#q").oninput = drawDocs;
   drawDocs();
   $("#docs").addEventListener("click", (event) => {
@@ -1411,7 +1436,9 @@ function submitReg() {
 }
 
 /* ===== Luồng Vay cầm cố sổ tiết kiệm ===== */
-let demandMax = 0; // Số tiền vay tối đa của sổ đang chọn
+let demandMax = 0; // Hạn mức vay tối đa của sổ đang chọn
+let borrowMoreMode = false;
+let borrowMoreDebt = 0;
 const savingsData = {
   s1: {
     amount: "50,000,000",
@@ -1448,14 +1475,14 @@ if (securedLoanOfferAmount) {
 function handleSavingsSelect(id) {
   const data = savingsData[id];
   if (!data) return;
-  demandMax = data.max;
+  demandMax = Math.max(0, data.max - (borrowMoreMode ? borrowMoreDebt : 0));
   const savingsSelect = document.getElementById("demand-savings");
   if (savingsSelect) savingsSelect.value = id;
   const savingsLabel = document.getElementById("demand-savings-label");
   if (savingsLabel)
     savingsLabel.textContent = `${data.account} - ${data.name}`;
   document.getElementById("demand-max").textContent =
-    data.max.toLocaleString("en-US") + " VND";
+    demandMax.toLocaleString("en-US") + " VND";
   document.getElementById("demand-rate").textContent =
     `${formatInterestRate(data.rate)}/năm`;
   document.getElementById("demand-end-date").textContent = data.endDate;
@@ -1472,6 +1499,9 @@ const demandInput = document.getElementById("demand-amount");
 const demandErr = document.getElementById("demand-amount-err");
 const demandNext = document.getElementById("btn-demand-next");
 const savingsTrigger = document.getElementById("demand-savings-trigger");
+const savingsSelect = document.getElementById("demand-savings");
+const demandPlan = document.querySelector('#loan-demand [data-pick="plan"]');
+const demandEquity = document.getElementById("demand-equity");
 const disbursementAccounts = PAYMENT_ACCOUNTS.map((account) => ({
   ...account,
   type: "Tài khoản thanh toán",
@@ -1481,6 +1511,53 @@ let selectedDisbursementAccount = PAYMENT_ACCOUNTS[1].number;
 const disbursementTrigger = document.getElementById("demand-disburse-trigger");
 const disbursementSheet = document.getElementById("sheetDisburseAccount");
 const disbursementList = document.getElementById("demandAccountList");
+function setBorrowMoreMode(enabled) {
+  borrowMoreMode = enabled;
+  const form = document.getElementById("loan-demand");
+  form.classList.toggle("borrow-more", enabled);
+  document.getElementById("demand-max-label").textContent = enabled
+    ? "Hạn mức vay thêm tối đa"
+    : "Số tiền vay tối đa";
+  document.getElementById("confirm-loan-title").textContent = enabled
+    ? "Xác nhận đăng ký vay thêm"
+    : "Xác nhận đăng ký vay";
+  document.getElementById("confirm-loan-amount-label").textContent = enabled
+    ? "Số tiền vay thêm"
+    : "Số tiền vay";
+  savingsTrigger.disabled = enabled;
+  savingsSelect.disabled = enabled;
+  demandPlan.disabled = enabled;
+  demandEquity.readOnly = enabled;
+  demandEquity.setAttribute("aria-readonly", String(enabled));
+  disbursementTrigger.disabled = enabled;
+  [
+    document.getElementById("savings-select-field"),
+    demandPlan,
+    document.getElementById("demand-equity-field"),
+    disbursementTrigger,
+  ].forEach((field) => field.classList.toggle("is-readonly", enabled));
+}
+function startBorrowMoreDemand() {
+  const loan = document.querySelector(
+    '#currentRecords .loan[data-detail="savings-pledge"]',
+  );
+  const debtText = loan?.querySelector(".loan-balance b")?.textContent || "";
+  const savingsId = loan?.dataset.savingsId;
+  const debt = Number(debtText.replace(/\D/g, ""));
+  if (!loan || !savingsData[savingsId] || !Number.isFinite(debt) || debt <= 0) {
+    console.error("Không thể xác định khoản vay cầm cố sổ tiết kiệm hiện tại.");
+    toast("Không thể tải thông tin khoản vay hiện tại");
+    return false;
+  }
+  borrowMoreDebt = debt;
+  setBorrowMoreMode(true);
+  handleSavingsSelect(savingsId);
+  demandInput.value = "";
+  syncDemandAmount();
+  document.getElementById("confirm-agree").checked = false;
+  document.getElementById("btn-confirm-loan").disabled = true;
+  return true;
+}
 function closeDisbursementSheet(restoreFocus = false) {
   disbursementSheet.classList.remove("on");
   document.getElementById("scrim").classList.remove("on");
@@ -1562,19 +1639,27 @@ function syncDemandAmount() {
     n > 0 ? docSo(n) : "";
   const over = demandMax > 0 && n > demandMax;
   const belowMinimum = n > 0 && n < 10000000;
-  const invalid = belowMinimum || over;
+  const noRemainingLimit = borrowMoreMode && demandMax <= 0;
+  const invalid = belowMinimum || over || noRemainingLimit;
   demandErr.hidden = !invalid;
-  demandErr.textContent = belowMinimum
-    ? "Số tiền vay tối thiểu là 10,000,000đ"
+  demandErr.textContent = noRemainingLimit
+    ? "Khoản vay hiện tại không còn hạn mức vay thêm"
+    : belowMinimum
+      ? "Số tiền vay tối thiểu là 10,000,000đ"
     : over
-      ? "Số tiền vay tối đa là " + demandMax.toLocaleString("en-US") + " VND"
-      : "";
+        ? (borrowMoreMode
+            ? "Hạn mức vay thêm tối đa là "
+            : "Số tiền vay tối đa là ") +
+          demandMax.toLocaleString("en-US") +
+          " VND"
+        : "";
   demandInput.setAttribute("aria-invalid", String(invalid));
   demandInput.closest(".fld").classList.toggle("is-error", invalid);
-  demandNext.disabled = n < 10000000 || over;
+  demandNext.disabled = n < 10000000 || over || noRemainingLimit;
   // đồng bộ số tiền người dùng nhập sang màn Xác nhận & Hợp đồng
   const txt = demandInput.value || "0";
   document.getElementById("confirm-loan-amount").textContent = txt + " VND";
+  document.getElementById("confirm-loan-total").textContent = txt + " VND";
   document.getElementById("contract-loan-amount").textContent = txt;
 }
 demandInput.addEventListener("input", () => {
@@ -3541,7 +3626,8 @@ updateTabBadges();
             { label: "Xem hợp\u00a0đồng", document: true },
             {
               label: "Vay thêm",
-              soon: "Tính năng Vay thêm chưa có trong mock-up",
+              go: "loan-demand",
+              borrowMore: true,
             },
             { label: "Trả nợ một\u00a0phần", prepay: "partial" },
             { label: "Tất toán", prepay: "settle" },
@@ -3586,8 +3672,10 @@ updateTabBadges();
         );
       button.removeAttribute("data-go");
       button.removeAttribute("data-soon");
+      button.removeAttribute("data-borrow-more");
       button.onclick = null;
       if (action.go) button.dataset.go = action.go;
+      if (action.borrowMore) button.dataset.borrowMore = "";
       else if (action.soon) button.dataset.soon = action.soon;
       else if (action.document) button.onclick = openLoanContract;
       else if (action.prepay)
@@ -4159,7 +4247,9 @@ updateTabBadges();
     // Đang đi luồng Vay cầm cố sổ tiết kiệm (đã qua màn Xác nhận đăng ký vay)
     if (historyStack.includes("confirm-loan")) {
       const amount = $i("demand-amount").value.replace(/\D/g, "");
-      $i("fs-limit-lb").textContent = "Số tiền vay";
+      $i("fs-limit-lb").textContent = borrowMoreMode
+        ? "Số tiền vay thêm"
+        : "Số tiền vay";
       $i("fs-term-lb").textContent = "Thời hạn vay";
       $i("fs-rate-lb").textContent = "Lãi suất vay";
       $i("fs-limit").textContent = (fmt(amount) || "0") + " VND";
