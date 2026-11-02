@@ -875,8 +875,42 @@
         </div>
 
         <h3 class="sec" id="allProdsTitle">Sản phẩm nổi bật</h3>
+        <div
+          class="lf-chips"
+          id="productFilter"
+          role="tablist"
+          aria-label="Lọc sản phẩm nổi bật"
+        >
+          <button
+            class="lf-chip on"
+            type="button"
+            data-product-filter="all"
+            role="tab"
+            aria-selected="true"
+          >
+            Tất cả
+          </button>
+          <button
+            class="lf-chip"
+            type="button"
+            data-product-filter="thechap"
+            role="tab"
+            aria-selected="false"
+          >
+            Thế chấp
+          </button>
+          <button
+            class="lf-chip"
+            type="button"
+            data-product-filter="tinchap"
+            role="tab"
+            aria-selected="false"
+          >
+            Tín chấp
+          </button>
+        </div>
         <div class="prods">
-          <button class="card prod" data-choose="Vay tiêu dùng">
+          <button class="card prod" data-choose="Vay tiêu dùng" data-loan-type="tinchap">
             <div class="prod-head">
               <div class="prod-icon">
                 <img src="consume_loan.png" alt="consume-loan-icon">
@@ -903,7 +937,7 @@
             </div>
           </button>
 
-          <button class="card prod" data-choose="Vay kinh doanh">
+          <button class="card prod" data-choose="Vay kinh doanh" data-loan-type="tinchap">
             <div class="prod-head">
               <div class="prod-icon">
                 <img src="biz_loan.png" alt="business-loan-icon">
@@ -930,7 +964,7 @@
             </div>
           </button>
 
-          <button class="card prod" data-choose="Vay mua ô tô">
+          <button class="card prod" data-choose="Vay mua ô tô" data-loan-type="thechap">
             <div class="prod-head">
               <div class="prod-icon">
                 <img src="auto_loan.png" alt="auto-loan-icon">
@@ -957,7 +991,7 @@
             </div>
           </button>
 
-          <button class="card prod" data-choose="Vay mua nhà">
+          <button class="card prod" data-choose="Vay mua nhà" data-loan-type="thechap">
             <div class="prod-head">
               <div class="prod-icon">
                 <img src="home_loan.png" alt="home-loan-icon">
@@ -984,7 +1018,7 @@
             </div>
           </button>
 
-          <button class="card prod" data-choose="Vay thấu chi">
+          <button class="card prod" data-choose="Vay thấu chi" data-loan-type="tinchap">
             <div class="prod-head">
               <div class="prod-icon">
                 <img src="ovd_loan.png" alt="overdraft-product-icon">
@@ -1169,10 +1203,23 @@
         <div class="pane p2">
           <div id="currentRecords">
             <div class="card debt">
-              <span class="debt-label">Tổng dư nợ vay</span
-              ><b class="red" id="totalDebt"
-                >2,089,860,647 <span class="debt-unit">VND</span></b
-              >
+              <h3 class="debt-heading">Tổng quan</h3>
+              <div class="debt-overview">
+                <div
+                  class="debt-donut"
+                  id="debtDonut"
+                  role="img"
+                  aria-label="Biểu đồ tỷ trọng tổng dư nợ vay"
+                >
+                  <div class="debt-donut-center">
+                    <span class="debt-label">Tổng dư nợ vay</span>
+                    <b class="red" id="totalDebt"
+                      >2,039,860,647 <span class="debt-unit">VND</span></b
+                    >
+                  </div>
+                </div>
+                <div class="debt-legend" id="debtLegend"></div>
+              </div>
             </div>
             <!-- Bộ lọc kênh vay: Online = bản ghi có cụm nút (.btns); còn lại = Tại quầy -->
             <div
@@ -1206,7 +1253,7 @@
                 Tại quầy<i>0</i>
               </button>
             </div>
-            <div class="loan" data-detail="savings-pledge">
+            <div class="loan" data-detail="savings-pledge" data-overview-name="Vay cầm cố sổ tiết kiệm">
               <div class="t">
                 Vay cầm cố sổ tiết kiệm<button
                   data-go="detail"
@@ -1217,13 +1264,14 @@
                   </svg>
                 </button>
               </div>
-              <div class="no">Số hợp đồng: 000001105208</div>
-              <div class="row">Dư nợ hiện tại<b>100,000,000 VND</b></div>
-              <div class="row">
-                Kỳ thanh toán tiếp theo<b>15/06/2027</b>
-              </div>
-              <div class="row">
-                Số tiền thanh toán kỳ <br> tiếp theo<b>107,200,000 VND</b>
+              <div class="loan-summary">
+                <div class="no">
+                  <span>Số hợp đồng</span><b>000001105208</b>
+                </div>
+                <div class="row loan-balance">
+                  <span class="loan-balance-label">Dư nợ hiện tại</span>
+                  <b>100,000,000 VND</b>
+                </div>
               </div>
               <div class="btns">
                 <button>
@@ -1239,6 +1287,7 @@
             <div
               class="loan"
               data-detail="od-luong"
+              data-overview-name="Thấu chi lương"
               data-disbursed="100000000"
               data-debt="50000000"
               data-max="80000000"
@@ -1251,13 +1300,14 @@
                   </svg>
                 </button>
               </div>
-              <div class="no">Số hợp đồng: 000001234567</div>
-              <div class="row">Dư nợ hiện tại<b>50,000,000 VND</b></div>
-              <div class="row">
-                Kỳ thanh toán tiếp theo<b>25/10/2026</b>
-              </div>
-              <div class="row">
-                Số tiền thanh toán kỳ <br> tiếp theo<b>849,583 VND</b>
+              <div class="loan-summary">
+                <div class="no">
+                  <span>Số hợp đồng</span><b>000001234567</b>
+                </div>
+                <div class="row loan-balance">
+                  <span class="loan-balance-label">Dư nợ hiện tại</span>
+                  <b>50,000,000 VND</b>
+                </div>
               </div>
               <div class="btns">
                 <button data-soon="Tính năng Đóng hạn mức chưa có trong mock-up">
@@ -1270,7 +1320,7 @@
                 </button>
               </div>
             </div>
-            <div class="loan">
+            <div class="loan" data-overview-name="Vay mua bất động sản">
               <div class="t">
                 Vay mua bất động sản<button
                   data-go="detail"
@@ -1281,30 +1331,50 @@
                   </svg>
                 </button>
               </div>
-              <div class="no">Số hợp đồng: LD2531514476</div>
-              <div class="row">Dư nợ hiện tại<b>1,478,163,647 VND</b></div>
-              <div class="row">
-                Kỳ thanh toán tiếp theo<b>15/10/2026</b>
+              <div class="loan-summary">
+                <div class="no">
+                  <span>Số hợp đồng</span><b>LD2531514476</b>
+                </div>
+                <div class="row loan-balance">
+                  <span class="loan-balance-label">Dư nợ hiện tại</span>
+                  <b>1,478,163,647 VND</b>
+                </div>
               </div>
-              <div class="row">
-                Số tiền thanh toán kỳ <br> tiếp theo<b>13,981,968 VND</b>
+              <div class="loan-progress" data-loan-progress="LD2531514476">
+                <div class="rs-progress-label">
+                  <b>Số kỳ đã thanh toán</b>
+                  <span class="loan-progress-count"></span>
+                </div>
+                <div class="rs-track" role="progressbar">
+                  <i class="loan-progress-fill"></i>
+                </div>
               </div>
             </div>
-            <div class="loan">
+            <div class="loan" data-overview-name="Vay mua ô tô">
               <div class="t">
-                Vay mua ô tô<button data-go="detail" aria-label="Chi tiết">
-                  <svg>
-                    <use href="#more" />
-                  </svg>
+                <span class="loan-title"
+                  >Vay mua ô tô<span class="chip c-red">Đang quá hạn</span></span
+                ><button data-go="detail" aria-label="Chi tiết">
+                  <svg><use href="#more" /></svg>
                 </button>
               </div>
-              <div class="no">Số hợp đồng: LD2316300948</div>
-              <div class="row">Dư nợ hiện tại<b>411,697,000 VND</b></div>
-              <div class="row">
-                Kỳ thanh toán tiếp theo<b>23/10/2026</b>
+              <div class="loan-summary">
+                <div class="no">
+                  <span>Số hợp đồng</span><b>LD2316300948</b>
+                </div>
+                <div class="row loan-balance">
+                  <span class="loan-balance-label">Dư nợ hiện tại</span>
+                  <b>411,697,000 VND</b>
+                </div>
               </div>
-              <div class="row">
-                Số tiền thanh toán kỳ <br> tiếp theo<b>8,883,792 VND</b>
+              <div class="loan-progress" data-loan-progress="LD2316300948">
+                <div class="rs-progress-label">
+                  <b>Số kỳ đã thanh toán</b>
+                  <span class="loan-progress-count"></span>
+                </div>
+                <div class="rs-track" role="progressbar">
+                  <i class="loan-progress-fill"></i>
+                </div>
               </div>
             </div>
             <div

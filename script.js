@@ -1,5 +1,9 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+const loanContractNumber = (card) =>
+  card.querySelector(".no b")?.textContent.trim() ||
+  card.querySelector(".no")?.textContent.replace(/^.*:\s*/, "").trim() ||
+  "";
 const PAYMENT_ACCOUNTS = [
   { id: "123456789", number: "123456789", balance: "31,232,661" },
   { id: "66668888", number: "66668888", balance: "131,754,158" },
@@ -3139,7 +3143,10 @@ updateTabBadges();
   if (!wrap || !bar) return;
   const loans = [...wrap.querySelectorAll(".loan")];
   const emptyEl = document.getElementById("loanFilterEmpty");
+  const donutEl = document.getElementById("debtDonut");
+  const legendEl = document.getElementById("debtLegend");
   const toNum = (s) => +String(s).replace(/\D/g, "") || 0;
+  const chartColors = ["#f36b2b", "#173451", "#a9b2c0", "#d7191f"];
 
   loans.forEach((c) => {
     c.dataset.channel = c.querySelector(".btns") ? "online" : "counter";
@@ -3147,14 +3154,54 @@ updateTabBadges();
 
   // Tổng dư nợ luôn là tổng của TẤT CẢ khoản vay, không đổi theo chip đang chọn
   const totalEl = document.getElementById("totalDebt");
+  const balances = loans.map((loan) => {
+    const debtRow = [...loan.querySelectorAll(".row")].find((row) =>
+      /^\s*Dư nợ (?:hiện tại|còn lại)/i.test(row.textContent),
+    );
+    return {
+      loan,
+      amount: debtRow ? toNum(debtRow.querySelector("b")?.textContent || "") : 0,
+    };
+  });
+  const totalDebt = balances.reduce((sum, item) => sum + item.amount, 0);
   if (totalEl) {
-    const sum = loans.reduce((s, c) => {
-      const r = [...c.querySelectorAll(".row")].find((x) =>
-        /^\s*Dư nợ (?:hiện tại|còn lại)/i.test(x.textContent),
-      );
-      return s + (r ? toNum(r.querySelector("b")?.textContent || "") : 0);
-    }, 0);
-    totalEl.firstChild.nodeValue = sum.toLocaleString("en-US") + " ";
+    totalEl.firstChild.nodeValue = totalDebt.toLocaleString("en-US") + " ";
+  }
+  if (donutEl && legendEl) {
+    let accumulated = 0;
+    const segments = [];
+    legendEl.replaceChildren();
+    balances.forEach(({ loan, amount }, index) => {
+      if (!amount) return;
+      const start = accumulated;
+      accumulated += (amount / totalDebt) * 100;
+      const color = chartColors[index % chartColors.length];
+      segments.push(`${color} ${start}% ${accumulated}%`);
+
+      const item = document.createElement("div");
+      item.className = "debt-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = "debt-legend-swatch";
+      swatch.style.backgroundColor = color;
+      const copy = document.createElement("div");
+      copy.className = "debt-legend-copy";
+      const name = document.createElement("span");
+      name.className = "debt-legend-name";
+      name.textContent = loan.dataset.overviewName;
+      const percent = document.createElement("span");
+      percent.className = "debt-legend-percent";
+      percent.textContent = ((amount / totalDebt) * 100).toFixed(2) + "%";
+      copy.append(name, percent);
+      item.append(swatch, copy);
+      legendEl.append(item);
+    });
+    donutEl.style.background = segments.length
+      ? `conic-gradient(${segments.join(", ")})`
+      : "conic-gradient(#e4e6eb 0 100%)";
+    donutEl.setAttribute(
+      "aria-label",
+      `Tổng dư nợ vay ${totalDebt.toLocaleString("en-US")} VND`,
+    );
   }
 
   // Bộ đếm trên từng chip (đếm theo bản ghi thật trong DOM, không phụ thuộc chip đang chọn)
@@ -3185,6 +3232,36 @@ updateTabBadges();
   bar.addEventListener("click", (e) => {
     const b = e.target.closest("[data-lf]");
     if (b) applyFilter(b.dataset.lf);
+  });
+  applyFilter("all");
+})();
+
+/* ===== Sản phẩm nổi bật: chip lọc theo hình thức vay ===== */
+(() => {
+  const wrap = document.querySelector("#loan .prods");
+  const bar = document.getElementById("productFilter");
+  if (!wrap || !bar) return;
+  const products = [...wrap.querySelectorAll(".prod")];
+
+  function applyFilter(key) {
+    products.forEach((product) => {
+      product.classList.toggle(
+        "pf-off",
+        key !== "all" && product.dataset.loanType !== key,
+      );
+    });
+    bar.querySelectorAll(".lf-chip").forEach((button) => {
+      const selected = button.dataset.productFilter === key;
+      button.classList.toggle("on", selected);
+      button.setAttribute("aria-selected", String(selected));
+    });
+  }
+
+  bar.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-product-filter]");
+    if (button && bar.contains(button)) {
+      applyFilter(button.dataset.productFilter);
+    }
   });
   applyFilter("all");
 })();
@@ -3366,6 +3443,31 @@ updateTabBadges();
     },
   };
   window.LOAN_SCHEDULES = SCHEDULES;
+  document.querySelectorAll("[data-loan-progress]").forEach((progress) => {
+    const contract = progress.dataset.loanProgress;
+    const schedule = SCHEDULES[contract];
+    if (!schedule) {
+      console.error(`Không tìm thấy lịch thanh toán cho hợp đồng ${contract}`);
+      return;
+    }
+    const paid = schedule.paidOnly
+      ? schedule.payments.length
+      : schedule.paid;
+    const percent = schedule.term ? (paid / schedule.term) * 100 : 0;
+    const count = progress.querySelector(".loan-progress-count");
+    const track = progress.querySelector('[role="progressbar"]');
+    const fill = progress.querySelector(".loan-progress-fill");
+    if (!count || !track || !fill) {
+      console.error(`Thiếu thành phần tiến độ thanh toán cho hợp đồng ${contract}`);
+      return;
+    }
+    count.textContent = `${paid}/${schedule.term}`;
+    track.setAttribute("aria-label", `Tiến độ trả nợ ${schedule.name}`);
+    track.setAttribute("aria-valuemin", "0");
+    track.setAttribute("aria-valuemax", String(schedule.term));
+    track.setAttribute("aria-valuenow", String(paid));
+    fill.style.width = `${percent}%`;
+  });
 
   function openLoanContract() {
     const url = new URL("HDTD.pdf", window.location.href).href;
@@ -3479,12 +3581,7 @@ updateTabBadges();
       const b = e.target.closest('[data-go="detail"]');
       if (!b) return;
       const loan = b.closest(".loan");
-      const no = loan
-        ? loan
-            .querySelector(".no")
-            .textContent.replace(/^.*:\s*/, "")
-            .trim()
-        : "";
+      const no = loan ? loanContractNumber(loan) : "";
       showDetail(no, loan && loan.dataset.channel, loan && loan.dataset.detail);
     },
     true,
@@ -3687,10 +3784,7 @@ updateTabBadges();
   function loadLoan(card) {
     const debt = rowNum(card, /^\s*Dư nợ (?:còn lại|hiện tại)/);
     const nextPay = rowNum(card, /^\s*Số tiền thanh toán kỳ\s+tiếp theo/);
-    PREPAY.contract = card
-      .querySelector(".no")
-      .textContent.replace(/^.*:\s*/, "")
-      .trim();
+    PREPAY.contract = loanContractNumber(card);
     PREPAY.debt = debt;
     PREPAY.interest = Math.max(0, nextPay - debt); // 107,200,000 − 100,000,000 = 7,200,000
   }

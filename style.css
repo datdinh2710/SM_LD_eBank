@@ -612,38 +612,105 @@ h1 {
   color: var(--ink);
 }
 .debt {
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.debt-heading {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+.debt-overview {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 68px;
-  padding: 16px 18px;
-  margin-bottom: 14px;
-  border: 1px solid #d5d8de;
-  border-radius: 20px;
-  background: linear-gradient(110deg, #f3f4f6, #fff 78%);
-  box-shadow: none;
-  color: #344054;
+  gap: 12px;
+}
+.debt-donut {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 142px;
+  width: 142px;
+  height: 142px;
+  border-radius: 50%;
+  background: conic-gradient(#e4e6eb 0 100%);
+}
+.debt-donut::before {
+  position: absolute;
+  width: 74%;
+  height: 74%;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+}
+.debt-donut-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 5px;
+  text-align: center;
+}
+.debt-label {
+  font-size: 10px;
+  line-height: 1.25;
 }
 .debt b {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
-  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   color: var(--ink);
-  font-size: clamp(18px, 5vw, 20px);
+  font-size: 13px;
   font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
-}
-.debt-label {
-  min-width: 0;
-  font-size: 14.5px;
-  line-height: 1.3;
 }
 .debt .debt-unit {
   color: #6b7280;
-  font-size: 14px !important;
-  font-weight: 400;
+  font-size: 9px;
+  font-weight: 500;
+}
+.debt-legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.debt-legend-item {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  align-items: start;
+  column-gap: 7px;
+  min-width: 0;
+}
+.debt-legend-swatch {
+  width: 8px;
+  height: 8px;
+  margin-top: 3px;
+  border-radius: 50%;
+}
+.debt-legend-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.debt-legend-name {
+  color: #4b5263;
+  font-size: 10px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.debt-legend-percent {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
 }
 .loan {
   background: #fff;
@@ -658,20 +725,75 @@ h1 {
   font-weight: 700;
   font-size: 16px;
 }
+.loan-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.loan-title .chip {
+  flex: none;
+  padding: 3px 8px;
+  font-size: 11px;
+}
 .loan .t svg {
   width: 20px;
   height: 20px;
   color: #4b5263;
 }
 .loan .no {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
   color: #4b5263;
-  font-size: 14px;
-  margin: 4px 0 12px;
-  padding-bottom: 12px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.loan .no b {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.loan-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 12px;
+  padding: 10px 0;
   border-bottom: 1px dashed #e4e6eb;
 }
 .loan .row {
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
   font-size: 14px;
+}
+.loan .loan-balance {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "label"
+    "amount";
+  justify-content: initial;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.25;
+  flex: none;
+}
+.loan-balance-label {
+  grid-area: label;
+  min-width: 0;
+  white-space: nowrap;
+}
+.loan .loan-balance b {
+  grid-area: amount;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 .btns {
   display: flex;
@@ -680,7 +802,7 @@ h1 {
 }
 .btns button {
   flex: 1;
-  padding: 11px 4px;
+  padding: 8px 4px;
   border-radius: 24px;
   font-size: 14px;
   font-weight: 600;
@@ -4748,8 +4870,33 @@ h1 {
   color: #fff;
 }
 .loan.lf-off,
-.acc.lf-off {
+.acc.lf-off,
+.prod.pf-off {
   display: none;
+}
+.loan-progress {
+  margin-top: 10px;
+}
+.loan-progress .rs-progress-label {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.loan-progress .rs-progress-label b {
+  font-size: 12px;
+}
+.loan-progress .rs-progress-label span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.loan-progress .rs-track {
+  height: 6px;
+}
+.loan-progress-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: var(--red);
 }
 /* Chi tiết khoản vay tại quầy: bỏ hẳn bottom navigation bar (các thao tác này chỉ dành cho khoản online) */
 .phone.detail[data-loan-channel="counter"] .tb2 {
