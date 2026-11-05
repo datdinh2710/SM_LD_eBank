@@ -3544,6 +3544,8 @@ updateTabBadges();
       balance: 411697000,
       day: 23,
       first: [7, 2023],
+      overdueDaysByInstallment: { 38: 31, 39: 5 },
+      overdueInterestBase: 5744841,
     },
     "000001234567": {
       name: "Thấu chi lương",
@@ -3575,7 +3577,8 @@ updateTabBadges();
     }
     const paid = schedule.paidOnly
       ? schedule.payments.length
-      : schedule.paid;
+      : schedule.paid - Object.keys(schedule.overdueDaysByInstallment || {})
+          .length;
     const percent = schedule.term ? (paid / schedule.term) * 100 : 0;
     const count = progress.querySelector(".loan-progress-count");
     const track = progress.querySelector('[role="progressbar"]');
@@ -3722,7 +3725,12 @@ updateTabBadges();
   const f = (n) => Math.round(n).toLocaleString("en-US");
   const pad = (n) => String(n).padStart(2, "0");
   const el = (id) => document.getElementById(id);
+  const yearPicker = el("rsYearPicker");
+  const yearPickerValue = el("rsYearPickerValue");
+  const yearOptions = el("rsYearOptions");
+  const yearNavButtons = [...document.querySelectorAll("[data-year-nav]")];
   let rows = [];
+  let selectedYear = "";
 
   // Dựng lịch từ mốc dư nợ hiện tại: các kỳ sau tính xuôi, các kỳ đã trả tính ngược.
   // Kỳ cuối tất toán hết dư nợ; kỳ 1 khớp đúng số tiền cho vay đã hiển thị.
@@ -3738,14 +3746,28 @@ updateTabBadges();
       // b = dư nợ sau kỳ k → dư nợ trước kỳ k
       const before = k === 1 ? c.principal : Math.round((b + c.pmt) / (1 + i));
       const principal = before - b;
+      const interest = c.pmt - principal;
+      const overdueDays = c.overdueDaysByInstallment?.[k] || 0;
+      const overduePrincipal = c.overdueInterestBase ?? principal;
+      const lateInterest = overdueDays
+        ? Math.round((0.1 * interest * overdueDays) / 365)
+        : 0;
+      const overdueInterest = overdueDays
+        ? Math.round(
+            (1.5 * (c.rate / 100) * overduePrincipal * overdueDays) / 365,
+          )
+        : 0;
       out.unshift({
         k,
         date: date(k),
         principal,
-        interest: c.pmt - principal,
-        total: c.pmt,
+        interest,
+        total: c.pmt + lateInterest + overdueInterest,
         balance: b,
-        st: "paid",
+        st: overdueDays ? "overdue" : "paid",
+        overdueDays,
+        lateInterest,
+        overdueInterest,
       });
       b = before;
     }
@@ -3769,49 +3791,76 @@ updateTabBadges();
 
   function item(r) {
     const paid = r.st === "paid";
+    const overdue = r.st === "overdue";
     return `<div class="rs-item${paid ? " is-paid" : ""}">
       <div class="rs-payment-main">
         <b>Kỳ ${r.k}</b>
+        <span class="rs-breakdown-label">Gốc phải trả</span>
+        <span class="rs-breakdown-label">Lãi phải trả</span>
+        ${overdue ? '<span class="rs-breakdown-label">Lãi chậm trả</span><span class="rs-breakdown-label">Lãi quá hạn</span>' : ""}
         <span>${r.date}</span>
       </div>
       <div class="rs-payment-side">
         <b class="rs-amount">${f(r.total)} <small>VND</small></b>
-        <span class="rs-status${paid ? " is-paid" : ""}">${paid ? "Đã thanh toán" : "Chưa đến hạn"}</span>
+        <span class="rs-breakdown-amount">${f(r.principal)} <small>VND</small></span>
+        <span class="rs-breakdown-amount">${f(r.interest)} <small>VND</small></span>
+        ${overdue ? `<span class="rs-breakdown-amount">${f(r.lateInterest)} <small>VND</small></span><span class="rs-breakdown-amount">${f(r.overdueInterest)} <small>VND</small></span>` : ""}
+        <span class="rs-status${paid ? " is-paid" : overdue ? " is-overdue" : ""}">${paid ? "Đã thanh toán" : overdue ? "Đã quá hạn" : "Chưa đến hạn"}</span>
       </div>
     </div>`;
   }
-  function paint(paidOnly) {
-    if (paidOnly) {
-      list.innerHTML = rows.length
-        ? rows.map(item).join("")
-        : '<p class="rs-empty">Chưa có kỳ thanh toán nào được ghi nhận.</p>';
-      return;
-    }
+  function paint() {
     const years = new Map();
     rows.forEach((row) => {
-      const year = row.date.slice(-4);
+      const year = Number(row.date.split("/")[2]);
       if (!years.has(year)) years.set(year, []);
       years.get(year).push(row);
     });
-    const expandedYear =
-      rows.find((row) => row.st !== "paid")?.date.slice(-4) ||
-      rows[0]?.date.slice(-4);
-    list.innerHTML = [...years]
-      .map(([year, installments]) => {
-        const expanded = year === expandedYear;
-        return `
-          <section class="rs-year">
-            <button class="rs-year-toggle" type="button" aria-expanded="${expanded}">
-              <span class="rs-year-title">${year}</span>
-              <span class="rs-year-count">${installments.length} kỳ</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-            </button>
-            <div class="rs-year-content"${expanded ? "" : " hidden"}>
-              ${installments.map(item).join("")}
-            </div>
-          </section>`;
-      })
+    const availableYears = [...years.keys()].sort((a, b) => a - b);
+    const defaultRow =
+      rows.find((row) => row.st !== "paid") || rows[rows.length - 1];
+    if (!availableYears.includes(Number(selectedYear))) {
+      selectedYear = String(
+        Number(defaultRow?.date.split("/")[2]) || availableYears[0] || "",
+      );
+    }
+
+    yearPickerValue.textContent = selectedYear;
+    yearPicker.disabled = availableYears.length === 0;
+    yearOptions.innerHTML = availableYears
+      .map(
+        (year) => `
+          <button
+            class="rs-year-option"
+            type="button"
+            role="option"
+            data-year="${year}"
+            aria-selected="${year === Number(selectedYear)}"
+          >${year}</button>`,
+      )
       .join("");
+    const selectedIndex = availableYears.indexOf(Number(selectedYear));
+    yearNavButtons.forEach((button) => {
+      const action = button.dataset.yearNav;
+      button.disabled =
+        selectedIndex < 0 ||
+        (action === "first" && selectedIndex === 0) ||
+        (action === "previous" && selectedIndex === 0) ||
+        (action === "next" && selectedIndex === availableYears.length - 1) ||
+        (action === "last" && selectedIndex === availableYears.length - 1);
+    });
+
+    const installments = years.get(Number(selectedYear)) || [];
+    closeYearOptions();
+    list.innerHTML = installments.length
+      ? installments.slice(0, 12).map(item).join("")
+      : '<p class="rs-empty">Chưa có kỳ thanh toán nào được ghi nhận.</p>';
+  }
+  function closeYearOptions(returnFocus = false) {
+    yearOptions.hidden = true;
+    yearPicker.setAttribute("aria-expanded", "false");
+    yearPicker.closest(".rs-year-picker-wrap").setAttribute("aria-expanded", "false");
+    if (returnFocus) yearPicker.focus();
   }
   function open(contract) {
     const cfg = (window.LOAN_SCHEDULES || {})[contract];
@@ -3819,6 +3868,8 @@ updateTabBadges();
     rows = cfg.paidOnly
       ? cfg.payments.map((payment, index) => ({
           ...payment,
+          principal: payment.principal || 0,
+          interest: payment.interest ?? payment.total,
           k: index + 1,
           st: "paid",
         }))
@@ -3829,14 +3880,78 @@ updateTabBadges();
     el("rsPaid").textContent = f(
       paidRows.reduce((s, r) => s + r.total, 0),
     );
-    paint(cfg.paidOnly);
+    const firstUnpaidRow =
+      rows.find((row) => row.st !== "paid") || rows[rows.length - 1];
+    selectedYear = firstUnpaidRow?.date.split("/")[2] || "";
+    paint();
   }
-  list.addEventListener("click", (event) => {
-    const button = event.target.closest(".rs-year-toggle");
-    if (!button) return;
-    const expanded = button.getAttribute("aria-expanded") === "true";
-    button.setAttribute("aria-expanded", String(!expanded));
-    button.nextElementSibling.hidden = expanded;
+  yearPicker.addEventListener("click", () => {
+    if (yearPicker.disabled) return;
+    const expanded = yearPicker.getAttribute("aria-expanded") === "true";
+    if (expanded) {
+      closeYearOptions();
+      return;
+    }
+    yearOptions.hidden = false;
+    yearPicker.setAttribute("aria-expanded", "true");
+    yearPicker.closest(".rs-year-picker-wrap").setAttribute("aria-expanded", "true");
+    yearOptions
+      .querySelector('[aria-selected="true"]')
+      ?.focus({ preventScroll: true });
+  });
+  yearOptions.addEventListener("click", (event) => {
+    const option = event.target.closest(".rs-year-option");
+    if (!option) return;
+    selectedYear = option.dataset.year;
+    paint();
+    yearPicker.focus();
+  });
+  yearOptions.addEventListener("keydown", (event) => {
+    const options = [...yearOptions.querySelectorAll(".rs-year-option")];
+    const currentIndex = options.indexOf(document.activeElement);
+    let nextIndex = currentIndex;
+    if (event.key === "Escape") {
+      closeYearOptions(true);
+    } else if (event.key === "ArrowRight") {
+      nextIndex = Math.min(currentIndex + 1, options.length - 1);
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = Math.max(currentIndex - 1, 0);
+    } else if (event.key === "ArrowDown") {
+      nextIndex = Math.min(currentIndex + 3, options.length - 1);
+    } else if (event.key === "ArrowUp") {
+      nextIndex = Math.max(currentIndex - 3, 0);
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = options.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    options[nextIndex]?.focus();
+  });
+  document.addEventListener("click", (event) => {
+    if (!yearPicker.closest(".rs-year-picker-wrap").contains(event.target)) {
+      closeYearOptions();
+    }
+  });
+  yearNavButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      closeYearOptions();
+      const years = [...new Set(
+        rows.map((row) => Number(row.date.split("/")[2])),
+      )].sort((a, b) => a - b);
+      const currentIndex = years.indexOf(Number(selectedYear));
+      const nextIndex = {
+        first: 0,
+        previous: currentIndex - 1,
+        next: currentIndex + 1,
+        last: years.length - 1,
+      }[button.dataset.yearNav];
+      if (nextIndex < 0 || nextIndex >= years.length) return;
+      selectedYear = String(years[nextIndex]);
+      paint();
+    });
   });
   document
     .querySelector("#repay-schedule .rs-backdrop")

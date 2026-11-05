@@ -1702,7 +1702,71 @@
               </div>
             </div>
             <h3 class="rs-details-title">Chi tiết</h3>
-            <div id="rsList"></div>
+            <div class="rs-year-navigation" aria-label="Chọn năm trả nợ">
+              <button
+                class="rs-year-nav"
+                type="button"
+                data-year-nav="first"
+                aria-label="Năm đầu tiên"
+                title="Năm đầu tiên"
+                disabled
+              >
+                <svg aria-hidden="true"><use href="#pg-first" /></svg>
+              </button>
+              <button
+                class="rs-year-nav"
+                type="button"
+                data-year-nav="previous"
+                aria-label="Năm trước"
+                title="Năm trước"
+                disabled
+              >
+                <svg aria-hidden="true"><use href="#pg-prev" /></svg>
+              </button>
+              <div class="rs-year-picker-wrap">
+                <button
+                  id="rsYearPicker"
+                  class="rs-year-picker-trigger"
+                  type="button"
+                  aria-label="Chọn năm trả nợ"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="rsYearOptions"
+                  disabled
+                >
+                  <span id="rsYearPickerValue"></span>
+                  <svg aria-hidden="true"><use href="#down" /></svg>
+                </button>
+                <div
+                  class="rs-year-options"
+                  id="rsYearOptions"
+                  role="listbox"
+                  aria-label="Năm trả nợ"
+                  hidden
+                ></div>
+              </div>
+              <button
+                class="rs-year-nav"
+                type="button"
+                data-year-nav="next"
+                aria-label="Năm tiếp theo"
+                title="Năm tiếp theo"
+                disabled
+              >
+                <svg aria-hidden="true"><use href="#pg-next" /></svg>
+              </button>
+              <button
+                class="rs-year-nav"
+                type="button"
+                data-year-nav="last"
+                aria-label="Năm cuối cùng"
+                title="Năm cuối cùng"
+                disabled
+              >
+                <svg aria-hidden="true"><use href="#pg-last" /></svg>
+              </button>
+            </div>
+            <div id="rsList" aria-live="polite"></div>
           </div>
         </div>
       </section>
