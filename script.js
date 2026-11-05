@@ -3805,7 +3805,7 @@ updateTabBadges();
         <span class="rs-breakdown-amount">${f(r.principal)} <small>VND</small></span>
         <span class="rs-breakdown-amount">${f(r.interest)} <small>VND</small></span>
         ${overdue ? `<span class="rs-breakdown-amount">${f(r.lateInterest)} <small>VND</small></span><span class="rs-breakdown-amount">${f(r.overdueInterest)} <small>VND</small></span>` : ""}
-        <span class="rs-status${paid ? " is-paid" : overdue ? " is-overdue" : ""}">${paid ? "Đã thanh toán" : overdue ? "Đã quá hạn" : "Chưa đến hạn"}</span>
+        <span class="rs-status${paid ? " is-paid" : overdue ? " is-overdue" : ""}">${paid ? "Đã thanh toán" : overdue ? "Đang quá hạn" : "Chưa đến hạn"}</span>
       </div>
     </div>`;
   }
@@ -3874,11 +3874,10 @@ updateTabBadges();
           st: "paid",
         }))
       : build(cfg);
-    const paidRows = rows.filter((r) => r.st === "paid");
-    el("rsProgTxt").textContent = `${paidRows.length}/${cfg.term}`;
-    el("rsFill").style.width = (paidRows.length / cfg.term) * 100 + "%";
-    el("rsPaid").textContent = f(
-      paidRows.reduce((s, r) => s + r.total, 0),
+    const overdueRows = rows.filter((r) => r.st === "overdue");
+    el("rsSummary").hidden = overdueRows.length === 0;
+    el("rsOverdueTotal").textContent = f(
+      overdueRows.reduce((sum, row) => sum + row.total, 0),
     );
     const firstUnpaidRow =
       rows.find((row) => row.st !== "paid") || rows[rows.length - 1];

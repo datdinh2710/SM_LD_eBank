@@ -177,24 +177,20 @@ h1 {
 /* Card tổng hạn mức được duyệt */
 .total-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 22px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin: 0 0 var(--pre-gap, 16px);
-  background: url("BG.png") center / cover no-repeat;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(215, 25, 31, 0.06);
 }
 .total-card .tt-label {
-  flex: 1;
-  min-width: 0;
+  display: block;
   font-size: 14px;
   line-height: 1.35;
   color: #4b5263;
 }
 .total-card .tt-amount {
-  font-size: 24px;
+  display: block;
+  font-size: 18px;
   font-weight: 700;
   color: #232a3b;
   white-space: nowrap;
@@ -456,13 +452,19 @@ h1 {
   display: grid;
   place-items: center;
 }
+.promo,
+.total-card,
+.rs-summary {
+  padding: 12px;
+  border: 0;
+  border-radius: 16px;
+  background: url("BG.png") center / cover no-repeat;
+  box-shadow: none;
+}
 .promo {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: 16px;
-  background: url("BG.png") center / cover no-repeat;
   margin: 16px 0 14px;
   font-size: 14px;
 }
@@ -746,6 +748,7 @@ h1 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 .debt-legend-percent {
   color: var(--ink);
@@ -5142,13 +5145,6 @@ h1 {
 }
 .rs-summary {
   margin: 0 0 16px;
-  padding: 20px 16px 16px;
-  border: 1px solid #f4d5d9;
-  border-radius: 18px;
-  background:
-    radial-gradient(ellipse at 90% 15%, rgba(215, 25, 31, 0.06), transparent 38%),
-    linear-gradient(135deg, #fff 0%, #fffafa 100%);
-  box-shadow: 0 4px 10px rgba(35, 42, 59, 0.08);
 }
 .rs-total,
 .rs-progress-label {
@@ -5158,13 +5154,16 @@ h1 {
   gap: 12px;
 }
 .rs-total {
-  padding-bottom: 18px;
-  border-bottom: 1px dashed #f3a5ab;
+  display: block;
   color: #4b5263;
   font-size: 14px;
 }
+.rs-total span {
+  display: block;
+}
 .rs-total b {
-  flex: none;
+  display: block;
+  margin-top: 4px;
   color: #171d2b;
   font-size: 18px;
   font-weight: 750;
@@ -5174,9 +5173,6 @@ h1 {
   color: #737b89;
   font-size: 12px;
   font-weight: 500;
-}
-.rs-progress {
-  padding-top: 14px;
 }
 .rs-progress-label {
   margin-bottom: 10px;
