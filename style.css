@@ -1039,6 +1039,7 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation: none !important;
   }
 }
 .home {
@@ -1207,6 +1208,21 @@ h1 {
 .sheet.on {
   transform: none;
   visibility: visible;
+}
+.sheet.on,
+.contract-bottom-sheet.on,
+.close-account-sheet.on,
+.prepay-warning:not([hidden]) .prepay-warning-sheet,
+#repay-schedule.on .rs-sheet {
+  animation: bottom-sheet-fly-in 0.34s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@keyframes bottom-sheet-fly-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 .sh {
   position: relative;
@@ -4653,12 +4669,18 @@ h1 {
 }
 #od-close-success,
 #od-inc-success,
-#od-dec-success {
+#od-dec-success,
+#prepay-success {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
   padding-bottom: 16px;
 }
 #od-close-success > .close-done,
 #od-inc-success > .close-done,
-#od-dec-success > .close-done {
+#od-dec-success > .close-done,
+#prepay-success > .close-done {
   flex: 1;
   min-height: 0;
   justify-content: flex-start;
@@ -4676,30 +4698,39 @@ h1 {
 }
 #od-close-success .close-done h2,
 #od-inc-success .close-done h2,
-#od-dec-success .close-done h2 {
+#od-dec-success .close-done h2,
+#prepay-success .close-done h2 {
   margin: 0 0 10px;
   font-size: 24px;
   line-height: 1.25;
 }
 #od-close-success .close-done p,
 #od-inc-success .close-done p,
-#od-dec-success .close-done p {
+#od-dec-success .close-done p,
+#prepay-success .close-done p {
   max-width: 100%;
   margin: 0 auto 16px;
   line-height: 1.45;
 }
 #od-close-success .close-success-summary,
 #od-inc-success .close-success-summary,
-#od-dec-success .close-success-summary {
+#od-dec-success .close-success-summary,
+#prepay-success .close-success-summary {
   flex: none;
   margin-top: 16px;
   border-color: #f0f2f6;
   border-radius: 24px;
   box-shadow: none;
 }
+#prepay-success .final-summary .fs-row b {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 #od-close-success .screen-bottom-actions,
 #od-inc-success .screen-bottom-actions,
-#od-dec-success .screen-bottom-actions {
+#od-dec-success .screen-bottom-actions,
+#prepay-success .screen-bottom-actions {
   position: static;
   flex: none;
   margin-top: auto;
@@ -5088,6 +5119,11 @@ h1 {
   position: absolute;
   inset: 0;
   background: rgba(15, 18, 30, 0.72);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+#repay-schedule.on .rs-backdrop {
+  opacity: 1;
 }
 .rs-sheet {
   position: absolute;
@@ -5930,6 +5966,115 @@ h1 {
 }
 #prepay-loan .prepay-foot {
   padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+}
+.prepay-warning {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(15, 17, 21, 0.48);
+  animation: bottom-sheet-backdrop-fade-in 0.24s ease both;
+}
+.prepay-warning[hidden] {
+  display: none;
+}
+.prepay-warning-sheet {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-height: 85%;
+  flex-direction: column;
+  padding: 0 16px calc(42px + env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+.prepay-warning-header {
+  position: relative;
+  display: flex;
+  min-height: 60px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 -16px;
+  padding: 12px 56px;
+  border-bottom: 1px solid #d1d5dc;
+}
+.prepay-warning-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+}
+.prepay-warning-close {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  transform: translateY(-50%);
+  color: #4b5563;
+}
+.prepay-warning-close svg {
+  width: 24px;
+  height: 24px;
+}
+.prepay-warning-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 28px 4px;
+  color: #374151;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+}
+.prepay-warning-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.prepay-warning-actions button {
+  width: 100%;
+  flex: none;
+  height: 48px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.prepay-warning-cancel {
+  border: 1px solid #d1d5dc;
+  background: #fff;
+  color: #000;
+}
+.prepay-warning-continue {
+  background: var(--red);
+  color: #fff;
+}
+.prepay-warning-sheet::after {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 134px;
+  height: 5px;
+  border-radius: 3px;
+  background: #6b7280;
+  content: "";
+  transform: translateX(-50%);
+}
+@keyframes bottom-sheet-backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 #prepay-loan .reg-amount-field {
   height: auto;

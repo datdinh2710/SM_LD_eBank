@@ -4221,12 +4221,22 @@ updateTabBadges();
   /* --- Màn Thành công --- */
   function fillSuccess() {
     const partial = PREPAY.mode === "partial";
-    $i("prepay-done-title").textContent = partial
-      ? "Trả nợ trước hạn thành công"
-      : "Tất toán thành công";
+    $i("prepay-done-title").textContent = "Đăng ký thành công";
     $i("prepay-done-msg").textContent = partial
-      ? "SeABank đã xử lý yêu cầu trả nợ trước hạn một phần của Quý khách."
-      : "SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách.";
+      ? "SeABank đã tiếp nhận yêu cầu trả nợ trước hạn một phần của Quý khách"
+      : "SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách";
+
+    const sourceLabel =
+      FUND_SOURCES.find((source) => source.id === PREPAY.source)?.label || "";
+    const accountLabel =
+      PREPAY.source === "savings" ? "Sổ tiết kiệm" : "Tài khoản trả nợ";
+    $i("prepay-success-contract").textContent = PREPAY.contract;
+    $i("prepay-success-source").textContent = sourceLabel;
+    $i("prepay-success-account-label").textContent = accountLabel;
+    $i("prepay-success-account").textContent = PREPAY.accountName;
+    $i("prepay-success-amount").textContent = `${f(PREPAY.amount)} VND`;
+    $i("prepay-success-date").textContent =
+      new Date().toLocaleDateString("vi-VN");
   }
 
   // --- Gắn sự kiện ---
@@ -4290,8 +4300,29 @@ updateTabBadges();
     if (PREPAY.mode === "settle" && !PREPAY.source)
       return toast("Vui lòng chọn nguồn tiền trả nợ");
     if (!PREPAY.account) return toast("Vui lòng chọn tài khoản trả nợ");
+    if (PREPAY.mode === "settle" && PREPAY.source === "savings") {
+      $i("prepay-warning").hidden = false;
+      $i("phone").scrollTop = 0;
+      $i("prepay-warning-continue").focus({ preventScroll: true });
+      return;
+    }
     navigateTo("prepay-confirm");
   };
+
+  const closePrepayWarning = () => {
+    $i("prepay-warning").hidden = true;
+    $i("prepay-next").focus({ preventScroll: true });
+  };
+  $i("prepay-warning-cancel").onclick = closePrepayWarning;
+  $i("prepay-warning-close").onclick = closePrepayWarning;
+  $i("prepay-warning-continue").onclick = () => {
+    $i("prepay-warning").hidden = true;
+    navigateTo("prepay-confirm");
+  };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$i("prepay-warning").hidden)
+      closePrepayWarning();
+  });
 
   // 4. Tiếp tục ở màn Xác nhận → Sinh trắc học
   $i("prepay-confirm-btn").onclick = () => {
