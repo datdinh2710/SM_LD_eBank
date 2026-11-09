@@ -1809,7 +1809,7 @@ const CASES = {
   5: {
     desc: "KVHH (✔), HSVV (✗), PDT (✗)",
     start: "profile",
-    activeTab: "2",
+    activeTab: "1",
     promo: false,
     pending: false,
     current: true,
@@ -1817,7 +1817,7 @@ const CASES = {
   6: {
     desc: "KVHH (✔), HSVV (✗), PDT (✔)",
     start: "profile",
-    activeTab: "2",
+    activeTab: "1",
     promo: true,
     pending: false,
     current: true,
@@ -1825,7 +1825,7 @@ const CASES = {
   7: {
     desc: "KVHH (✔), HSVV (✔), PDT (✗)",
     start: "profile",
-    activeTab: "2",
+    activeTab: "1",
     promo: false,
     pending: true,
     current: true,
@@ -1833,7 +1833,7 @@ const CASES = {
   8: {
     desc: "KVHH (✔), HSVV (✔), PDT (✔)",
     start: "profile",
-    activeTab: "2",
+    activeTab: "1",
     promo: true,
     pending: true,
     current: true,
@@ -1915,27 +1915,12 @@ function applyCase(num) {
   document.getElementById("currentEmpty").style.display = c.current
     ? "none"
     : "";
-  /* 6) Cập nhật badge số lượng trên tab */
-  const bp = document.getElementById("tabBadgePending");
-  const bc = document.getElementById("tabBadgeCurrent");
-  if (bp) bp.style.display = c.pending ? "" : "none";
-  if (bc) bc.style.display = c.current ? "" : "none";
   const hasPDT = /PDT \(✔\)/.test(c.desc); // case 2, 4, 6, 8
   document.getElementById("preApproved").hidden = !hasPDT;
   document.getElementById("allProdsTitle").hidden = !hasPDT;
   document.getElementById("loan").classList.toggle("no-pre-approved", !hasPDT);
   if (window.cfRefresh) cfRefresh();
 }
-function updateTabBadges() {
-  const pCount = document.querySelectorAll("#pendingRecords .acc").length;
-  const cCount = document.querySelectorAll("#currentRecords .loan").length;
-  const bp = document.getElementById("tabBadgePending");
-  const bc = document.getElementById("tabBadgeCurrent");
-  if (bp) bp.textContent = pCount;
-  if (bc) bc.textContent = cCount;
-}
-
-updateTabBadges();
 (function syncTotalAndPromo() {
   const loanEl = document.getElementById("loan");
   const totalEl = document.getElementById("totalAmount");
@@ -1953,11 +1938,10 @@ updateTabBadges();
     // Nếu giá trị không đổi → thoát, tránh trigger observer lần 2
     if (sum === lastTotal) return;
     lastTotal = sum;
-    // Cập nhật card total (giữ nguyên thẻ <u>đ</u>)
-    totalEl.innerHTML =
-      sum.toLocaleString("en-US") + ' <u style="font-size:14px">VND</u>';
-    // Cập nhật promo — luôn khớp với total
-    promoEl.textContent = sum.toLocaleString("en-US") + " VND";
+    const formattedTotal = sum.toLocaleString("en-US");
+    const currency = '<u style="font-size:14px">VND</u>';
+    totalEl.innerHTML = `${formattedTotal} ${currency}`;
+    promoEl.innerHTML = `${formattedTotal} ${currency}`;
   }
   // Chạy lần đầu khi load
   updateTotal();
@@ -3365,6 +3349,19 @@ updateTabBadges();
   const bar = document.getElementById("productFilter");
   if (!wrap || !bar) return;
   const products = [...wrap.querySelectorAll(".prod")];
+  const counts = {
+    thechap: products.filter((product) => product.dataset.loanType === "thechap")
+      .length,
+    tinchap: products.filter((product) => product.dataset.loanType === "tinchap")
+      .length,
+  };
+
+  bar.querySelectorAll("[data-product-filter]").forEach((button) => {
+    const count = button.querySelector("i");
+    if (count && counts[button.dataset.productFilter] !== undefined) {
+      count.textContent = counts[button.dataset.productFilter];
+    }
+  });
 
   function applyFilter(key) {
     products.forEach((product) => {
@@ -4221,22 +4218,12 @@ updateTabBadges();
   /* --- Màn Thành công --- */
   function fillSuccess() {
     const partial = PREPAY.mode === "partial";
-    $i("prepay-done-title").textContent = "Đăng ký thành công";
+    $i("prepay-done-title").textContent = partial
+      ? "Trả nợ trước hạn thành công"
+      : "Tất toán thành công";
     $i("prepay-done-msg").textContent = partial
-      ? "SeABank đã tiếp nhận yêu cầu trả nợ trước hạn một phần của Quý khách"
-      : "SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách";
-
-    const sourceLabel =
-      FUND_SOURCES.find((source) => source.id === PREPAY.source)?.label || "";
-    const accountLabel =
-      PREPAY.source === "savings" ? "Sổ tiết kiệm" : "Tài khoản trả nợ";
-    $i("prepay-success-contract").textContent = PREPAY.contract;
-    $i("prepay-success-source").textContent = sourceLabel;
-    $i("prepay-success-account-label").textContent = accountLabel;
-    $i("prepay-success-account").textContent = PREPAY.accountName;
-    $i("prepay-success-amount").textContent = `${f(PREPAY.amount)} VND`;
-    $i("prepay-success-date").textContent =
-      new Date().toLocaleDateString("vi-VN");
+      ? "SeABank đã xử lý yêu cầu trả nợ trước hạn một phần của Quý khách."
+      : "SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách.";
   }
 
   // --- Gắn sự kiện ---
@@ -4300,29 +4287,8 @@ updateTabBadges();
     if (PREPAY.mode === "settle" && !PREPAY.source)
       return toast("Vui lòng chọn nguồn tiền trả nợ");
     if (!PREPAY.account) return toast("Vui lòng chọn tài khoản trả nợ");
-    if (PREPAY.mode === "settle" && PREPAY.source === "savings") {
-      $i("prepay-warning").hidden = false;
-      $i("phone").scrollTop = 0;
-      $i("prepay-warning-continue").focus({ preventScroll: true });
-      return;
-    }
     navigateTo("prepay-confirm");
   };
-
-  const closePrepayWarning = () => {
-    $i("prepay-warning").hidden = true;
-    $i("prepay-next").focus({ preventScroll: true });
-  };
-  $i("prepay-warning-cancel").onclick = closePrepayWarning;
-  $i("prepay-warning-close").onclick = closePrepayWarning;
-  $i("prepay-warning-continue").onclick = () => {
-    $i("prepay-warning").hidden = true;
-    navigateTo("prepay-confirm");
-  };
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !$i("prepay-warning").hidden)
-      closePrepayWarning();
-  });
 
   // 4. Tiếp tục ở màn Xác nhận → Sinh trắc học
   $i("prepay-confirm-btn").onclick = () => {

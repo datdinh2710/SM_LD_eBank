@@ -737,6 +737,11 @@
             </div>
           </div>
         </div>
+        <img
+          class="home-promo-banner"
+          src="promo_banner.png"
+          alt="Mở thẻ tín dụng SeALady nhận nhiều ưu đãi"
+        />
       </section>
       <!-- Vay vốn -->
       <section class="screen" id="loan">
@@ -754,7 +759,7 @@
         <div class="pre" id="preApproved">
           <!-- Card tổng hạn mức -->
           <div class="total-card">
-            <span class="tt-label">Tổng hạn mức<br />vay được duyệt</span>
+            <span class="tt-label">Tổng hạn mức vay được duyệt</span>
             <b class="tt-amount" id="totalAmount">700,000,000 <u>VND</u></b>
           </div>
 
@@ -898,6 +903,7 @@
             aria-selected="false"
           >
             Thế chấp
+            <i>0</i>
           </button>
           <button
             class="lf-chip"
@@ -907,6 +913,7 @@
             aria-selected="false"
           >
             Tín chấp
+            <i>0</i>
           </button>
         </div>
         <div class="prods">
@@ -1060,18 +1067,18 @@
         <p class="sub">Quản lý khoản vay nhanh chóng, dễ dàng</p>
         <!-- Promo (hiển thị tùy trường hợp) -->
         <div class="promo" id="profilePromo">
-          <div>
-            Tổng hạn mức vay được duyệt
-            <span class="promo-amount" id="promoAmount"></span>
+          <div class="promo-copy">
+            <span class="tt-label">Tổng hạn mức vay được duyệt</span>
+            <span class="promo-amount tt-amount" id="promoAmount"></span>
           </div>
           <button data-go="loan">Vay ngay</button>
         </div>
         <div class="tabs">
           <button data-tab="1" class="on">
-            Hồ sơ vay <i id="tabBadgePending">4</i>
+            Hồ sơ vay
           </button>
           <button data-tab="2">
-            Khoản vay hiện tại <i id="tabBadgeCurrent">3</i>
+            Khoản vay hiện tại
           </button>
         </div>
         <div class="pane p1">
@@ -1165,6 +1172,35 @@
                 <div class="row">Ngày yêu cầu<b>02/10/2026</b></div>
                 <div class="row">Số tiền đề nghị<b>800,000,000 VND</b></div>
                 <div class="row">Trạng thái<b>Đang thẩm định</b></div>
+                <div class="counter-stepper">
+                  <ol aria-label="Tiến độ xử lý hồ sơ tại quầy">
+                    <li class="complete">
+                      <span
+                        class="counter-stepper__marker"
+                        aria-label="Đã hoàn thành"
+                      >
+                        <svg aria-hidden="true"><use href="#check-mark" /></svg>
+                      </span>
+                      <span class="counter-stepper__label">Khởi tạo <br> hồ sơ</span>
+                    </li>
+                    <li class="current" aria-current="step">
+                      <span class="counter-stepper__marker">2</span>
+                      <span class="counter-stepper__label">Thẩm định</span>
+                    </li>
+                    <li>
+                      <span class="counter-stepper__marker">3</span>
+                      <span class="counter-stepper__label">Phê duyệt</span>
+                    </li>
+                    <li>
+                      <span class="counter-stepper__marker">4</span>
+                      <span class="counter-stepper__label">Giải ngân</span>
+                    </li>
+                    <li>
+                      <span class="counter-stepper__marker">5</span>
+                      <span class="counter-stepper__label">Hoàn thành</span>
+                    </li>
+                  </ol>
+                </div>
               </div>
             </div>
             <div class="acc" data-channel="counter">
@@ -2512,84 +2548,20 @@
           </button>
         </div>
         <div class="close-done">
-          <img class="close-success-icon" src="success_icon.png" alt="" />
-          <h2 id="prepay-done-title">Đăng ký thành công</h2>
-          <p id="prepay-done-msg">
-            SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách
-          </p>
-          <div
-            class="final-summary close-success-summary"
-            id="prepay-success-summary"
-          >
-            <div class="fs-row">
-              <span>Hợp đồng vay</span><b id="prepay-success-contract"></b>
-            </div>
-            <div class="fs-row">
-              <span>Nguồn tiền trả nợ</span><b id="prepay-success-source"></b>
-            </div>
-            <div class="fs-row">
-              <span id="prepay-success-account-label"></span
-              ><b id="prepay-success-account"></b>
-            </div>
-            <div class="fs-row">
-              <span>Số tiền tất toán</span><b id="prepay-success-amount"></b>
-            </div>
-            <div class="fs-row">
-              <span>Ngày thực hiện</span><b id="prepay-success-date"></b>
-            </div>
+          <div class="ok-circle">
+            <svg>
+              <use href="#check" />
+            </svg>
           </div>
+          <h2 id="prepay-done-title">Tất toán thành công</h2>
+          <p id="prepay-done-msg">
+            SeABank đã xử lý yêu cầu tất toán khoản vay của Quý khách.
+          </p>
         </div>
         <div class="od-foot screen-bottom-actions">
           <button class="submit" id="prepay-home">Theo dõi kết quả</button>
         </div>
       </section>
-
-      <div
-        class="prepay-warning"
-        id="prepay-warning"
-        hidden
-      >
-        <div
-          class="prepay-warning-sheet"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="prepay-warning-title"
-          aria-describedby="prepay-warning-message"
-        >
-          <div class="prepay-warning-header">
-            <h2 id="prepay-warning-title">Thông báo</h2>
-            <button
-              class="prepay-warning-close"
-              id="prepay-warning-close"
-              type="button"
-              aria-label="Đóng thông báo"
-            >
-              <svg><use href="#close" /></svg>
-            </button>
-          </div>
-          <p class="prepay-warning-message" id="prepay-warning-message">
-            Trường hợp Quý khách tất toán khoản vay hiện tại bằng nguồn tiền từ
-            sổ tiết kiệm, các khoản vay cầm cố sổ tiết kiệm online khác đang
-            được bảo đảm bằng sổ tiết kiệm này cũng sẽ được tất toán đồng thời
-          </p>
-          <div class="prepay-warning-actions">
-            <button
-              class="prepay-warning-continue"
-              id="prepay-warning-continue"
-              type="button"
-            >
-              Đã hiểu
-            </button>
-            <button
-              class="prepay-warning-cancel"
-              id="prepay-warning-cancel"
-              type="button"
-            >
-              Huỷ bỏ
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Bottom Sheet: Chọn Nguồn tiền trả nợ -->
       <div class="sheet" id="sheetPrepaySource">
